@@ -1,0 +1,21 @@
+# BoardPlus — Cloudflare Worker + Durable Objects (free plan)
+name = "boardplus"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[[durable_objects.bindings]]
+name = "ROOM"
+class_name = "Room"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]
+
+[vars]
+# ضع هنا معرّف مشروع Firebase الجديد (Project ID)
+FIREBASE_PROJECT_ID = "boardplus-eb6b1"
+# ADMIN_EMAILS يُضاف كـ Secret من لوحة Cloudflare، لا تكتبه هنا

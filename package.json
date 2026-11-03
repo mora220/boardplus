@@ -1,0 +1,13 @@
+{
+  "name": "boardplus",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BoardPlus — interactive class whiteboard for every teacher",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
