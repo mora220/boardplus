@@ -159,7 +159,7 @@ export class Room extends DurableObject {
     for (const r of this.sql.exec('SELECT k, v FROM kv').toArray()) {
       if (r.k === '__name') { this.name = r.v; continue }
       if (r.k.startsWith('__')) continue;
-      try { t = setIn(t, r.k.replace('\u0000', '/').split('/'), JSON.parse(r.v)) } catch (e) {}
+      try { t = setIn(t, r.k.split(/[\/\u0000]/), JSON.parse(r.v)) } catch (e) {}
     }
     this.tree = t;
   }
@@ -176,7 +176,7 @@ export class Room extends DurableObject {
     if (v == null) return;
     const s = JSON.stringify(v);
     if (s.length <= CHUNK_MAX || typeof v !== 'object') { this.sql.exec('INSERT OR REPLACE INTO kv (k, v) VALUES (?, ?)', k, s); return }
-    for (const g in v) this.sql.exec('INSERT OR REPLACE INTO kv (k, v) VALUES (?, ?)', k + '\u0000' + g, JSON.stringify(v[g]));
+    for (const g in v) this.put(k + '\u0000' + g, v[g]);            // big branches (e.g. recordings) are split further, row by row
   }
   writeTop(n) {
     this.delPrefix(n, '/'); this.sql.exec('DELETE FROM kv WHERE substr(k, 1, ?) = ?', n.length + 1, n + '\u0000');
@@ -224,6 +224,15 @@ export class Room extends DurableObject {
       return s[2] !== 'name' || (typeof v === 'string' && v.trim().length > 0 && v.length <= 30);
     }
     if (s[0] === 'sb' && s.length >= 2) return getIn(this.tree, ['roster', s[1]]) != null && JSON.stringify(v || '').length < 400000;
+    if (s[0] === 'media' && s.length >= 2 && s.length <= 4) {          // student voice / video notes: media/<sid>/<mid>/<c0..c9|m|n|d>
+      if (getIn(this.tree, ['roster', s[1]]) == null) return false;
+      if (v == null) return true;                                      // a student may delete their own recordings
+      const mine = getIn(this.tree, ['media', s[1]]) || {};
+      if (s.length >= 3 && !mine[s[2]] && Object.keys(mine).length >= 12) return false;   // at most 12 recordings per student
+      if (s.length === 4) return /^(c\d|m|n|d)$/.test(s[3]) && JSON.stringify(v).length <= 210000;
+      if (s.length === 3) return typeof v === 'object' && Object.keys(v).every(k => /^(m|n|d)$/.test(k)) && JSON.stringify(v).length < 400;
+      return false;
+    }
     if (s[0] === 'qa' && s.length === 3) {
       const [, qid, sid] = s;
       return getIn(this.tree, ['quiz', 'st']) === 'q' && getIn(this.tree, ['quiz', 'qid']) === qid && getIn(this.tree, ['qa', qid, sid]) == null

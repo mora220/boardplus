@@ -371,6 +371,12 @@ rep('const I18N = {', 'const I18N = {' + add_js + ',')
 rep('"سبورة الأستاذ محمد رجب التفاعلية":"Mr. Mohamed Ragab\'s Interactive Board",', '')
 rep('"BoardPlus | سبورة تفاعلية مجانية للمعلمين"' if False else 'const I18N = {', 'const I18N = {"BoardPlus | سبورة تفاعلية مجانية للمعلمين":"BoardPlus | Free interactive whiteboard for teachers",')
 
+# student voice / video notes
+import feat_media
+def _r1(src, a, b):
+    assert src.count(a) == 1, (src.count(a), a[:80]); return src.replace(a, b)
+s = feat_media.apply(s, _r1)
+
 # sanity: no leftovers
 for bad in ['__AVATAR__', 'ADMIN_HASH', 'ADMIN_EMAIL', 'emailOf(', 'createUser', 'AVATAR_SRC', 'quizragab.html', "'teacher/q"]:
     assert bad not in s, bad
