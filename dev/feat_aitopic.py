@@ -40,7 +40,10 @@ Return JSON only, no other text, in this shape:
 """
 
 CSS = """
-.aisrc{margin-bottom:10px}
+.dlg .seg,.dlg .aimode,.dlg .aitopic,.dlg .aigrid,.dlg .drop{flex-shrink:0}
+.aisrc{align-self:stretch!important;display:flex;margin-bottom:6px;padding:4px}
+.aisrc button{flex:1;padding:11px 10px!important;font-size:15px!important;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.aisrc button .ico{width:18px;height:18px}
 .aitopic{display:grid;grid-template-columns:1fr 2fr;gap:10px}
 .aitopic label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted)}
 .aitopic .full{grid-column:1/-1}
