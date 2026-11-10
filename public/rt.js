@@ -4,6 +4,7 @@
   const RT = window.RT = {};
   let tokenFn = async () => '', off = 0;
   RT.setToken = f => { tokenFn = f };
+  RT.token = async () => { try { return (await tokenFn()) || '' } catch (e) { return '' } };
   RT.now = () => Date.now() + off;
   RT.TS = () => ({ '.sv': 'timestamp' });
   const rooms = new Map(), connL = new Set();

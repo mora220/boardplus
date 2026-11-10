@@ -97,6 +97,8 @@ function gate(room, id, env) {          // who may open a room at all
   return '';
 }
 
+const FILE_MAX = 40 * 1024 * 1024, ROOM_FILES_MAX = 150 * 1024 * 1024, FILE_CHUNK = 1024 * 1024;   // files teachers show to students
+
 /* ---------------- Worker entry ---------------- */
 export default {
   async fetch(req, env) {
@@ -132,6 +134,19 @@ export default {
         }
         return json({ error: 'busy' }, 503);
       }
+      if (url.pathname === '/api/upload' && req.method === 'POST') {     // teacher uploads a file to show students
+        const room = url.searchParams.get('room') || '', id = await verify(bearer(req), env);
+        if (!/^s:\d{6}$/.test(room) || !id) return json({ error: 'login' }, 401);
+        const len = +(req.headers.get('content-length') || 0); if (len > FILE_MAX) return json({ error: 'big' }, 413);
+        const h = identHeaders(null, room, id, env); h.set('X-Name', (url.searchParams.get('name') || 'file').slice(0, 120)); h.set('X-Type', (url.searchParams.get('type') || 'application/octet-stream').slice(0, 100));
+        return roomStub(env, room).fetch(new Request('https://room/upload', { method: 'POST', headers: h, body: await req.arrayBuffer() }));
+      }
+      if (url.pathname.startsWith('/api/file/')) {                         // /api/file/<code>/<id>/<name>  (public by unguessable id)
+        const [code, fid] = url.pathname.split('/').slice(3);
+        if (!/^\d{6}$/.test(code || '') || !/^[a-z0-9]{10,40}$/.test(fid || '')) return json({ error: 'not found' }, 404);
+        const h = new Headers({ 'X-Room': 's:' + code }); const rg = req.headers.get('range'); if (rg) h.set('range', rg);
+        return roomStub(env, 's:' + code).fetch(new Request('https://room/file?id=' + fid, { headers: h }));
+      }
       return json({ error: 'not found' }, 404);
     } catch (e) { return json({ error: String(e && e.message || e) }, 500) }
   }
@@ -150,6 +165,11 @@ export class Room extends DurableObject {
       this.load();
       for (const ws of ctx.getWebSockets()) { try { ws.send('{"t":"resync"}') } catch (e) {} }   // woke from hibernation: ask clients to resubscribe
     });
+  }
+  fileTables() {
+    if (this.ft) return; this.ft = true;
+    this.sql.exec('CREATE TABLE IF NOT EXISTS fmeta (id TEXT PRIMARY KEY, name TEXT, type TEXT, size INTEGER)');
+    this.sql.exec('CREATE TABLE IF NOT EXISTS fdata (id TEXT, i INTEGER, d BLOB, PRIMARY KEY (id, i))');
   }
   get kind() { return this.name ? (this.name === 'd' ? 'd' : this.name[0]) : '' }
 
@@ -203,7 +223,7 @@ export class Room extends DurableObject {
     if (this.ctx.getWebSockets().length) { await this.ctx.storage.setAlarm(Date.now() + 2 * 3600e3); return }
     this.tree = null; this.dirty.clear(); this.dirtyTop.clear(); this.dirtyAll = false;
     if (this.flushT) { clearTimeout(this.flushT); this.flushT = null }
-    await this.ctx.storage.deleteAll();
+    await this.ctx.storage.deleteAll(); this.ft = false;
     this.name = ''; this.alarmSet = false;
   }
 
@@ -289,6 +309,35 @@ export class Room extends DurableObject {
       const s = segsOf(url.searchParams.get('path'));
       if (!this.canRead(who, s)) return json({ error: 'PERMISSION_DENIED' }, 403);
       return json({ v: getIn(this.tree, s) });
+    }
+    if (url.pathname === '/upload' && req.method === 'POST') {
+      if (this.kind !== 's' || !getIn(this.tree, ['meta', 'active'])) return json({ error: 'no session' }, 404);
+      if (!(who.adm || (who.uid && who.uid === getIn(this.tree, ['meta', 'owner'])))) return json({ error: 'forbidden' }, 403);
+      const buf = new Uint8Array(await req.arrayBuffer()); if (!buf.length) return json({ error: 'empty' }, 400);
+      if (buf.length > FILE_MAX) return json({ error: 'big' }, 413);
+      this.fileTables();
+      const used = this.sql.exec('SELECT COALESCE(SUM(size),0) AS n FROM fmeta').one().n;
+      if (used + buf.length > ROOM_FILES_MAX) return json({ error: 'big' }, 413);
+      const fid = crypto.randomUUID().replace(/-/g, '').slice(0, 24), name = h.get('X-Name') || 'file', type = h.get('X-Type') || 'application/octet-stream';
+      for (let i = 0, k = 0; i < buf.length; i += FILE_CHUNK, k++) this.sql.exec('INSERT INTO fdata (id, i, d) VALUES (?, ?, ?)', fid, k, buf.slice(i, i + FILE_CHUNK).buffer);
+      this.sql.exec('INSERT INTO fmeta (id, name, type, size) VALUES (?, ?, ?, ?)', fid, name, type, buf.length);
+      const code = this.name.slice(2), safe = encodeURIComponent(name.replace(/[\/\\?#]/g, '_'));
+      return json({ id: fid, url: `/api/file/${code}/${fid}/${safe}` });
+    }
+    if (url.pathname === '/file') {
+      this.fileTables();
+      const fid = url.searchParams.get('id') || '', m = this.sql.exec('SELECT type, size FROM fmeta WHERE id = ?', fid).toArray()[0];
+      if (!m) return json({ error: 'not found' }, 404);
+      let a = 0, b = m.size - 1, st = 200; const rg = /bytes=(\d*)-(\d*)/.exec(h.get('range') || '');
+      if (rg) { if (rg[1]) { a = +rg[1]; if (rg[2]) b = Math.min(+rg[2], m.size - 1) } else if (rg[2]) a = Math.max(0, m.size - +rg[2]); if (a > b || a >= m.size) return new Response(null, { status: 416, headers: { 'content-range': `bytes */${m.size}` } }); st = 206 }
+      const out = new Uint8Array(b - a + 1), c0 = Math.floor(a / FILE_CHUNK), c1 = Math.floor(b / FILE_CHUNK);
+      for (const r of this.sql.exec('SELECT i, d FROM fdata WHERE id = ? AND i BETWEEN ? AND ? ORDER BY i', fid, c0, c1).toArray()) {
+        const d = new Uint8Array(r.d), off = r.i * FILE_CHUNK, s0 = Math.max(a, off), s1 = Math.min(b + 1, off + d.length);
+        if (s1 > s0) out.set(d.subarray(s0 - off, s1 - off), s0 - a);
+      }
+      const hd = { 'content-type': m.type, 'content-length': String(out.length), 'accept-ranges': 'bytes', 'cache-control': 'public, max-age=3600', 'access-control-allow-origin': '*' };
+      if (st === 206) hd['content-range'] = `bytes ${a}-${b}/${m.size}`;
+      return new Response(out, { status: st, headers: hd });
     }
     if (url.pathname === '/init' && req.method === 'POST') {            // new class session (s rooms)
       if (getIn(this.tree, ['meta', 'active'])) return json({ error: 'exists' }, 409);

@@ -51,9 +51,9 @@ function host(name) {
   if (!h.inst) {
     const ctx = {
       storage: {
-        sql: { exec(q, ...b) { const st = h.db.prepare(q); if (/^\s*select/i.test(q)) { const rows = st.all(...b); return { toArray: () => rows, one: () => rows[0], [Symbol.iterator]: () => rows[Symbol.iterator]() } } st.run(...b); return { toArray: () => [], one: () => undefined, [Symbol.iterator]: () => [][Symbol.iterator]() } } },
+        sql: { exec(q, ...b) { b = b.map(x => x instanceof ArrayBuffer ? new Uint8Array(x) : x); const st = h.db.prepare(q); if (/^\s*select/i.test(q)) { const rows = st.all(...b); return { toArray: () => rows, one: () => rows[0], [Symbol.iterator]: () => rows[Symbol.iterator]() } } st.run(...b); return { toArray: () => [], one: () => undefined, [Symbol.iterator]: () => [][Symbol.iterator]() } } },
         async setAlarm(t) { h.alarm = t }, async deleteAlarm() { h.alarm = null }, async getAlarm() { return h.alarm },
-        async deleteAll() { h.db.exec('DROP TABLE IF EXISTS kv'); h.db.exec('CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT)') }
+        async deleteAll() { h.db.exec('DROP TABLE IF EXISTS kv'); h.db.exec('DROP TABLE IF EXISTS fmeta'); h.db.exec('DROP TABLE IF EXISTS fdata'); h.db.exec('CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT)') }
       },
       blockConcurrencyWhile(fn) { h.ready = Promise.resolve().then(fn); return h.ready },
       acceptWebSocket(ws) { ws.mode = 'hib'; ws.owner = h; h.sockets.add(ws) },
