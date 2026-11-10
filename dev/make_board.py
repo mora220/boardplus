@@ -376,6 +376,8 @@ import feat_media
 def _r1(src, a, b):
     assert src.count(a) == 1, (src.count(a), a[:80]); return src.replace(a, b)
 s = feat_media.apply(s, _r1)
+import feat_pages
+s = feat_pages.apply(s, _r1)
 
 # sanity: no leftovers
 for bad in ['__AVATAR__', 'ADMIN_HASH', 'ADMIN_EMAIL', 'emailOf(', 'createUser', 'AVATAR_SRC', 'quizragab.html', "'teacher/q"]:
