@@ -17,7 +17,7 @@ ADD_I18N = {
     "لو الصفحة ما ظهرت، افتحها في تبويب جديد": "If the page doesn't appear, open it in a new tab", "افتح": "Open",
     "التشغيل والإيقاف من عندك يظهر عند كل الطلاب": "Play, pause and seek here and it happens for every student",
     "إنجليزي (4 سطور)": "English (4 lines)", "مربعات": "Grid", "سطور": "Lines", "نقاط": "Dots", "بيضاء": "Blank",
-    "ميجا": "MB",
+    "ميجا": "MB", "٣ سبورات بجانب بعض بحجم كبير": "3 boards side by side, large", "سبورتين بجانب بعض بحجم كبير جدًا": "2 boards side by side, extra large",
 }
 
 CSS = r"""
@@ -184,5 +184,19 @@ def apply(s, rep):
     s = rep(s, "  S.unsubs.push(DB.onValue(b + '/bgImg', async src => { S.bg.img = await loadImg(src); S.board.mark('bg') }));",
             "  S.unsubs.push(DB.onValue(b + '/bgImg', async src => { S.bg.img = await loadImg(src); S.board.mark('bg') }));\n  S.unsubs.push(DB.onValue(b + '/show', v => S.showP && S.showP(v)));")
     s = rep(s, "/* ======================= STUDENT ======================= */", JS.strip() + "\n\n/* ======================= STUDENT ======================= */")
+    # no autocorrect / spellcheck in the typing tool, so typed English shows the student's real spelling
+    s = rep(s, "    const ta = document.createElement('textarea'); ta.className = 'tx'; ta.rows = 1; ta.setAttribute('dir', 'auto');",
+            "    const ta = document.createElement('textarea'); ta.className = 'tx'; ta.rows = 1; ta.setAttribute('dir', 'auto');\n"
+            "    ta.spellcheck = false; ['autocorrect', 'autocapitalize', 'autocomplete'].forEach(a => ta.setAttribute(a, 'off')); ta.setAttribute('data-gramm', 'false'); ta.setAttribute('data-enable-grammarly', 'false');")
+    # reading long answers: show 3 or 2 student boards side by side, full width
+    s = rep(s, '<div class="seg" id="sizeSeg"><button data-s="120">ص</button><button data-s="160" class="on">م</button><button data-s="240">ك</button></div>',
+            '<div class="seg" id="sizeSeg"><button data-s="120">ص</button><button data-s="160" class="on">م</button><button data-s="240">ك</button><button data-c="3" title="٣ سبورات بجانب بعض بحجم كبير">٣</button><button data-c="2" title="سبورتين بجانب بعض بحجم كبير جدًا">٢</button></div>')
+    s = rep(s, "$('#sizeSeg').onclick = e => { const b = e.target.closest('button'); if (!b) return; $('#sizeSeg').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); $('#sGrid').style.setProperty('--thumb', b.dataset.s + 'px'); ls.set('rb_thumb', b.dataset.s) };",
+            "$('#sizeSeg').onclick = e => { const b = e.target.closest('button'); if (!b) return; $('#sizeSeg').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); const g = $('#sGrid');\n"
+            "    if (b.dataset.c) { g.style.gridTemplateColumns = `repeat(${b.dataset.c},minmax(0,1fr))`; g.classList.add('bigcols'); if (!document.body.classList.contains('gridmode')) $('#gridMode').click(); ls.set('rb_thumb', 'c' + b.dataset.c) }\n"
+            "    else { g.style.gridTemplateColumns = ''; g.classList.remove('bigcols'); g.style.setProperty('--thumb', b.dataset.s + 'px'); ls.set('rb_thumb', b.dataset.s) } };")
+    s = rep(s, "  const ts = ls.get('rb_thumb'); if (ts) { const b = $(`#sizeSeg [data-s=\"${ts}\"]`); b && b.click() }",
+            "  const ts = ls.get('rb_thumb'); if (ts && !/^c/.test(ts)) { const b = $(`#sizeSeg [data-s=\"${ts}\"]`); b && b.click() }")
+    s = rep(s, '.selbox{', '.grid.bigcols .sc canvas{width:100%;height:auto;image-rendering:auto}\n.grid.bigcols .sc .nm{font-size:16px}\n.selbox{')
     s = rep(s, 'const I18N = {', 'const I18N = {' + json.dumps(ADD_I18N, ensure_ascii=False)[1:-1] + ',')
     return s
