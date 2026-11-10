@@ -378,6 +378,8 @@ def _r1(src, a, b):
 s = feat_media.apply(s, _r1)
 import feat_pages
 s = feat_pages.apply(s, _r1)
+import feat_aitopic
+s = feat_aitopic.apply(s, _r1)
 
 # sanity: no leftovers
 for bad in ['__AVATAR__', 'ADMIN_HASH', 'ADMIN_EMAIL', 'emailOf(', 'createUser', 'AVATAR_SRC', 'quizragab.html', "'teacher/q"]:
