@@ -4,12 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<title>BoardPlus | سبورة تفاعلية مجانية للمعلمين</title>
-<meta name="description" content="سبورة تفاعلية مجانية لكل معلم: يدخل الطلاب بكود الحصة بدون حساب، ويحلّون على سبوراتهم، وتصحح لهم مباشرة، مع كويزات وألعاب من صورة الدرس بالذكاء الاصطناعي.">
-<meta property="og:title" content="BoardPlus | سبورة تفاعلية مجانية للمعلمين">
-<meta property="og:description" content="سبورة تفاعلية مجانية لكل معلم: يدخل الطلاب بكود الحصة بدون حساب، ويحلّون على سبوراتهم، وتصحح لهم مباشرة، مع كويزات وألعاب من صورة الدرس بالذكاء الاصطناعي.">
+<title>BoardPlus | شوف حل كل طالب لحظة بلحظة وصحّحه فورًا</title>
+<meta name="description" content="سبورة الحصة التفاعلية: كل طالب يحل على سبورته وأنت تشوف وتصحح لحظيًا، مع كويز فوري بالذكاء الاصطناعي وألعاب ولوحة صدارة وعرض صوت وفيديو. الطلاب يدخلون بالكود بدون حساب.">
+<meta property="og:title" content="BoardPlus | شوف حل كل طالب لحظة بلحظة وصحّحه فورًا">
+<meta property="og:image" content="https://boardplus.mawhibax.com/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:description" content="سبورة الحصة التفاعلية: كل طالب يحل على سبورته وأنت تشوف وتصحح لحظيًا، مع كويز فوري بالذكاء الاصطناعي وألعاب ولوحة صدارة وعرض صوت وفيديو. الطلاب يدخلون بالكود بدون حساب.">
 <meta property="og:type" content="website">
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="application-name" content="BoardPlus">
 <meta name="apple-mobile-web-app-title" content="BoardPlus">
 <meta name="theme-color" content="#2f5bd3">
@@ -138,7 +141,7 @@ button{cursor:pointer}
 .stage{flex:1;min-height:0;min-width:0;container-type:size;display:grid;place-items:center;padding:14px}
 .board{position:relative;width:min(100cqw,160cqh);aspect-ratio:16/10;max-width:100%;background:var(--paper);border-radius:10px;box-shadow:var(--shadow);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;transition:box-shadow .3s}
 .board canvas.lyr{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.board .ov{position:absolute;inset:0;cursor:crosshair}
+.board .ov{position:absolute;inset:0;cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Ccircle cx='6' cy='6' r='4' fill='%2315213a' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E") 6 6,crosshair}
 .imgedit{position:absolute;inset:0;z-index:4;cursor:move;touch-action:none;overflow:hidden}
 .ibox{position:absolute;border:2px dashed #2f5bd3;box-shadow:0 0 0 9999px rgba(14,21,36,.14);pointer-events:none;border-radius:2px}
 .ibox i{position:absolute;width:20px;height:20px;background:#fff;border:3px solid #2f5bd3;border-radius:50%;pointer-events:auto;touch-action:none;box-shadow:0 1px 4px rgba(0,0,0,.25)}

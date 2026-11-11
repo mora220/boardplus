@@ -16,15 +16,18 @@ def rep_block(start, end, new):
     s = s[:a] + new + s[b:]
 
 # ---------------- head ----------------
-T = 'BoardPlus | سبورة تفاعلية مجانية للمعلمين'
-DESC = 'سبورة تفاعلية مجانية لكل معلم: يدخل الطلاب بكود الحصة بدون حساب، ويحلّون على سبوراتهم، وتصحح لهم مباشرة، مع كويزات وألعاب من صورة الدرس بالذكاء الاصطناعي.'
+T = 'BoardPlus | شوف حل كل طالب لحظة بلحظة وصحّحه فورًا'
+DESC = 'سبورة الحصة التفاعلية: كل طالب يحل على سبورته وأنت تشوف وتصحح لحظيًا، مع كويز فوري بالذكاء الاصطناعي وألعاب ولوحة صدارة وعرض صوت وفيديو. الطلاب يدخلون بالكود بدون حساب.'
 head_end = s.index('<meta name="claude:viewport-fit-sides" content="cover">')
 s = f'''<title>{T}</title>
 <meta name="description" content="{DESC}">
-<meta property="og:title" content="BoardPlus | سبورة تفاعلية مجانية للمعلمين">
+<meta property="og:title" content="{T}">
+<meta property="og:image" content="https://boardplus.mawhibax.com/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:description" content="{DESC}">
 <meta property="og:type" content="website">
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="application-name" content="BoardPlus">
 <meta name="apple-mobile-web-app-title" content="BoardPlus">
 <meta name="theme-color" content="#2f5bd3">

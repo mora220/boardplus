@@ -165,6 +165,7 @@ function showPanel(stage, isT) {
 
 
 def apply(s, rep):
+    s = rep(s, '.board .ov{position:absolute;inset:0;cursor:crosshair}', ".board .ov{position:absolute;inset:0;cursor:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Ccircle cx='6' cy='6' r='4' fill='%2315213a' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E\") 6 6,crosshair}")
     s = rep(s, '.selbox{', CSS.strip() + '\n.selbox{')
     s = rep(s, '    <symbol id="i-img" viewBox', ICON + '    <symbol id="i-img" viewBox')
     # English lines background
