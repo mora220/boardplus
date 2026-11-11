@@ -228,7 +228,9 @@ export class Room extends DurableObject {
   }
 
   /* ----- access rules ----- */
+  isT(a) { return a.role === 't' || !!a.adm || (!!a.uid && a.uid === getIn(this.tree, ['meta', 'owner'])) }
   canRead(a, s) {
+    if (this.kind === 's') return this.isT(a) || (s.length > 0 && s[0] !== 'sqk');    // race-quiz answer key is for the teacher only
     if (this.kind !== 'd') return true;
     return !!a.adm || (s[0] === 'teachers' && s[1] === a.uid && !!a.uid);
   }
@@ -253,12 +255,32 @@ export class Room extends DurableObject {
       if (s.length === 3) return typeof v === 'object' && Object.keys(v).every(k => /^(m|n|d)$/.test(k)) && JSON.stringify(v).length < 400;
       return false;
     }
+    if (s[0] === 'sqa' && s.length === 3) {                          // race quiz: each student answers in order, once
+      const [, sid, k] = s, sq = getIn(this.tree, ['sq']);
+      if (!sq || sq.st !== 'run' || getIn(this.tree, ['roster', sid]) == null) return false;
+      const mine = getIn(this.tree, ['sqa', sid]) || {};
+      if (k === 'go') return !mine.go;
+      if (!/^\d+$/.test(k)) return false; const i = +k;
+      return !!mine.go && i < (+sq.n || 0) && mine[k] == null && (i === 0 || mine[i - 1] != null) && !!v && typeof v.c === 'string' && /^[ABCD]?$/.test(v.c);
+    }
     if (s[0] === 'qa' && s.length === 3) {
       const [, qid, sid] = s;
       return getIn(this.tree, ['quiz', 'st']) === 'q' && getIn(this.tree, ['quiz', 'qid']) === qid && getIn(this.tree, ['qa', qid, sid]) == null
         && getIn(this.tree, ['roster', sid]) != null && !!v && typeof v.c === 'string' && /^[ABCD]$/.test(v.c);
     }
     return false;
+  }
+
+  sqMark(s, v, now) {            // the room scores race-quiz answers so students never see the key in advance
+    const [, sid, k] = s, sq = getIn(this.tree, ['sq']) || {};
+    if (k === 'go') return { at: now };
+    const i = +k, mine = getIn(this.tree, ['sqa', sid]) || {};
+    const start = i === 0 ? ((mine.go && mine.go.at) || sq.at || now) : ((mine[i - 1] && mine[i - 1].at) || now);
+    const lim = +((sq.lim || [])[i]) || 30, dt = Math.max(0, (now - start) / 1000), key = getIn(this.tree, ['sqk', String(i)]) || '';
+    const ok = !!v.c && v.c === key && dt <= lim + 4;
+    let streak = 0; for (let j = i - 1; j >= 0 && mine[j] && mine[j].ok; j--) streak++;
+    const pts = ok ? Math.round(500 + 500 * Math.max(0, 1 - dt / lim)) + Math.min(streak, 5) * 50 : 0;
+    return { c: v.c || '', at: now, ok, k: key, dt: Math.round(dt * 10) / 10, pts, p: ok ? (dt <= lim / 4 ? 2 : 1) : 0, s: ok ? streak + 1 : 0 };
   }
 
   /* ----- applying writes + fan-out ----- */
@@ -269,6 +291,7 @@ export class Room extends DurableObject {
       if (this.kind === 's' && a.role !== 't' && w[0][0] === 'qa' && w[1]) w[1].at = now;
       if (a.internal) continue;
       if (!this.canWrite(a, w[0], w[1])) return false;
+      if (this.kind === 's' && a.role !== 't' && w[0][0] === 'sqa' && w[1]) w[1] = this.sqMark(w[0], w[1], now);
     }
     for (const [s, v] of writes) { this.tree = setIn(this.tree, s, v == null ? null : JSON.parse(JSON.stringify(v))); this.markDirty(s) }
     this.broadcast(writes);
