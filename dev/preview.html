@@ -112,7 +112,7 @@ button{cursor:pointer}
 .inp{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:11px 14px;font-size:16px;outline:none;transition:border-color .15s,background .15s}
 .inp:focus{border-color:var(--accent);background:var(--surface)}
 .inp.code{font-family:var(--f-display);font-size:30px;letter-spacing:.32em;text-align:center;direction:ltr;font-weight:600;padding:10px}
-.err{color:var(--red);font-size:14px;min-height:1.2em;margin:0}
+.err{color:var(--red);font-size:14px;min-height:1.2em;margin:0;white-space:pre-line;overflow-wrap:anywhere}
 .switch{background:none;border:0;color:var(--accent);font-weight:600;padding:4px 0;align-self:flex-start}
 .foot{color:var(--muted);font-size:12px;padding-block:14px;text-align:center}
 
@@ -3073,10 +3073,11 @@ async function geminiGenerate(shot, n, type, level, key, tp) {
   const prompt = tp ? aiTopicPrompt(n, type, level, tp) : aiPrompt(n, type, level), [meta, b64] = shot ? shot.split(',') : ['', ''], mt = (meta.match(/data:(.*?);/) || [])[1] || 'image/jpeg';
   let models = [];
   try { models = await geminiModels(key) } catch (e) { if (e.status === 400 || e.status === 403) throw e }
+  const PREF = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash', 'gemini-2.5-flash-lite', 'gemini-flash-lite-latest'];
+  models = [...PREF.filter(m => !models.length || models.includes(m)), ...models.filter(m => !PREF.includes(m))];
   const cached = ls.get('rb_gm_model'); if (cached && models.includes(cached)) models = [cached, ...models.filter(m => m !== cached)];
-  if (!models.length) models = ['gemini-flash-latest', 'gemini-flash-lite-latest'];
   let last = null;
-  for (const model of models.slice(0, 4)) {
+  for (const model of models.slice(0, 6)) {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ contents: [{ role: 'user', parts: [...(shot ? [{ inlineData: { mimeType: mt, data: b64 } }] : []), { text: prompt }] }], generationConfig: { temperature: tp ? 0.6 : 0.4, responseMimeType: 'application/json' } })
@@ -3084,7 +3085,9 @@ async function geminiGenerate(shot, n, type, level, key, tp) {
     if (res.ok) {
       const j = await res.json(); const parts = (((j.candidates || [])[0] || {}).content || {}).parts || [];
       const txt = parts.filter(p => !p.thought).map(p => p.text || '').join('');
-      ls.set('rb_gm_model', model); return parseAIList(txt);
+      try { const qs = parseAIList(txt); if (qs && qs.length) { ls.set('rb_gm_model', model); return qs } } catch (e) {}
+      if (ls.get('rb_gm_model') === model) ls.set('rb_gm_model', '');
+      last = { status: 200, t: 'empty or unreadable answer from ' + model, g: true }; continue;
     }
     last = { status: res.status, t: await res.text(), g: true };
     if ((res.status === 400 && /API_KEY|api key/i.test(last.t)) || res.status === 403) break;
@@ -3119,7 +3122,7 @@ function aiErrMsg(e) {
     if (e.status === 429) return 'وصلت للحد المجاني المؤقت من Google. انتظر دقيقة وجرّب مرة ثانية.';
     if (/location|region|not supported/i.test(t)) return 'Google ما تسمح بهذه الخدمة من موقعك الحالي.';
     if (e.status === 403) return 'Google رفضت الطلب. تأكد إن المفتاح مفعّل لـ Gemini API.';
-    return `حصل خطأ من Gemini${e.status ? ` (${e.status})` : ''}. حاول مرة ثانية.`;
+    return `حصل خطأ من Gemini${e.status ? ` (${e.status})` : ''}. حاول مرة ثانية.` + (t ? `\n${String(t).replace(/\s+/g, ' ').slice(0, 160)}` : '');
   }
   if (e instanceof SyntaxError) return 'وصل رد غير مفهوم. جرّب مرة ثانية.';
   if (e instanceof TypeError) return 'تعذر الاتصال بخدمة الذكاء الاصطناعي. تأكد من الإنترنت. (الميزة تعمل من موقعك المرفوع، ولا تعمل داخل معاينة Claude)';

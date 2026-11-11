@@ -391,6 +391,8 @@ s = feat_admin.apply(s, _r1)
 _ns = {'s': s, 'json': json}; exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'feat_lasso.py')).read(), _ns); s = _ns['s']
 import feat_draw
 s = feat_draw.apply(s, _r1)
+import feat_gemfix
+s = feat_gemfix.apply(s, _r1)
 
 # sanity: no leftovers
 for bad in ['__AVATAR__', 'ADMIN_HASH', 'ADMIN_EMAIL', 'emailOf(', 'createUser', 'AVATAR_SRC', 'quizragab.html', "'teacher/q"]:
