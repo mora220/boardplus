@@ -97,9 +97,9 @@ async function startRace(only) {
 }
 async function endRace() {
   const sq = RACE.sq; if (!sq || sq.st !== 'run') return;
-  if (!(await ask('إنهاء الكويز؟', 'يظهر الترتيب النهائي لكل الطلاب.', 'إنهاء الكويز'))) return;
+  if (!(await ask('إنهاء الكويز؟', 'يظهر الترتيب النهائي، ويأخذ الأول ٣ نقاط والثاني نقطتين والثالث نقطة في لوحة الصدارة.', 'إنهاء الكويز'))) return;
   const b = `sessions/${T.code}`, up = {};
-  for (const [sid, m] of Object.entries(RACE.a || {})) { let p = 0; for (const [k, v] of Object.entries(m || {})) if (/^\d+$/.test(k) && v) p += v.p || 0; if (p) up[`${sid}/${sq.id}`] = p }
+  raceTotals(RACE.a).filter(x => x.pts > 0).slice(0, 3).forEach((x, i) => { up[`${x.sid}/${sq.id}`] = 3 - i });   // leaderboard: 1st 3 points, 2nd 2, 3rd 1
   if (Object.keys(up).length) await DB.update(b + '/qpts', up);
   await DB.update(b + '/sq', { st: 'end' }); SFX.applause(); confetti();
 }
