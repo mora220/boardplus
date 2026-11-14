@@ -42,76 +42,6 @@ CSS = r"""
 """
 
 JS = r"""
-/* ======================= graph of functions ======================= */
-const FXC = new Map();
-function compileFx(src) {
-  const key = String(src); if (FXC.has(key)) return FXC.get(key);
-  let e = key.toLowerCase().replace(/[×]/g, '*').replace(/[÷]/g, '/').replace(/[−–]/g, '-').replace(/π/g, 'pi').replace(/√/g, 'sqrt').replace(/\s+/g, '').replace(/^y=|^f\(x\)=/, '');
-  if (!e || !/^[0-9x+\-*/^().a-z,]*$/.test(e)) throw new Error('bad');
-  const F = { sin: 'Math.sin', cos: 'Math.cos', tan: 'Math.tan', asin: 'Math.asin', acos: 'Math.acos', atan: 'Math.atan', sqrt: 'Math.sqrt', abs: 'Math.abs', ln: 'Math.log', log: 'Math.log10', exp: 'Math.exp' };
-  const tk = e.match(/\d+\.?\d*|\.\d+|[a-z]+|[-+*/^(),]/g) || []; if (tk.join('') !== e) throw new Error('bad');
-  let out = '', prev = '';
-  const val = t => /^[\d.]/.test(t) || t === 'x' || t === 'pi' || t === 'e' || t === ')';
-  for (let t of tk) {
-    if (/^[a-z]+$/.test(t) && !F[t] && t !== 'x' && t !== 'pi' && t !== 'e') {
-      const parts = t.match(/sqrt|asin|acos|atan|sin|cos|tan|abs|exp|ln|log|pi|x|e/g); if (!parts || parts.join('') !== t) throw new Error('bad');   // e.g. "2xsin"
-      for (const q of parts) { if (val(prev) && (val(q) || F[q])) out += '*'; out += F[q] || (q === 'pi' ? 'Math.PI' : q === 'e' ? 'Math.E' : q); prev = q } continue;
-    }
-    const isStart = val(t) && t !== ')' || F[t] || t === '(';
-    if (val(prev) && isStart) out += '*';
-    out += t === '^' ? '**' : F[t] || (t === 'pi' ? 'Math.PI' : t === 'e' ? 'Math.E' : t); prev = t;
-  }
-  const fn = new Function('x', '"use strict";return (' + out + ')'); fn(1); FXC.set(key, fn); return fn;
-}
-const niceStep = r => { const p = Math.pow(10, Math.floor(Math.log10(r / 6))), m = r / 6 / p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p };
-function drawGraph(ctx, s, k) {
-  const X = s.x * k, Y = s.y * k, Wd = (s.gw || 800) * k, Ht = (s.gh || 560) * k, x0 = +s.x0 || -10, x1 = +s.x1 > x0 ? +s.x1 : x0 + 20;
-  const fs = String(s.f || '').split(';').map(t => t.trim()).filter(Boolean).slice(0, 4), cols = ['#2f5bd3', '#e0242f', '#1f9d55', '#7b3fc4'];
-  const fns = fs.map(f => { try { return compileFx(f) } catch (e) { return null } }), N = Math.max(120, Math.round((s.gw || 800) * 1.2));
-  let lo = Infinity, hi = -Infinity; const pts = fns.map(fn => { const a = []; for (let i = 0; i <= N; i++) { const x = x0 + (x1 - x0) * i / N; let y = NaN; try { y = fn ? fn(x) : NaN } catch (e) {} a.push(isFinite(y) ? y : NaN); if (isFinite(y) && Math.abs(y) < 1e6) { lo = Math.min(lo, y); hi = Math.max(hi, y) } } return a });
-  if (!isFinite(lo)) { lo = -10; hi = 10 } lo = Math.min(lo, 0); hi = Math.max(hi, 0); if (hi - lo < 1e-6) { hi += 1; lo -= 1 }
-  const pad = (hi - lo) * .08; lo -= pad; hi += pad;
-  const sx = v => X + (v - x0) / (x1 - x0) * Wd, sy = v => Y + Ht - (v - lo) / (hi - lo) * Ht;
-  ctx.save(); ctx.fillStyle = '#fff'; ctx.fillRect(X, Y, Wd, Ht); ctx.beginPath(); ctx.rect(X, Y, Wd, Ht); ctx.clip();
-  const fz = Math.max(9, 15 * k); ctx.font = `500 ${fz}px "IBM Plex Sans Arabic",sans-serif`; ctx.direction = 'ltr';
-  const gx = niceStep(x1 - x0), gy = niceStep(hi - lo);
-  ctx.lineWidth = Math.max(1, k); ctx.strokeStyle = '#e3e8f3';
-  for (let v = Math.ceil(x0 / gx) * gx; v <= x1; v += gx) { ctx.beginPath(); ctx.moveTo(sx(v), Y); ctx.lineTo(sx(v), Y + Ht); ctx.stroke() }
-  for (let v = Math.ceil(lo / gy) * gy; v <= hi; v += gy) { ctx.beginPath(); ctx.moveTo(X, sy(v)); ctx.lineTo(X + Wd, sy(v)); ctx.stroke() }
-  const ax = Math.min(Math.max(sx(0), X), X + Wd), ay = Math.min(Math.max(sy(0), Y), Y + Ht);
-  ctx.strokeStyle = '#15213a'; ctx.lineWidth = Math.max(1.4, 2.2 * k); ctx.beginPath(); ctx.moveTo(X, ay); ctx.lineTo(X + Wd, ay); ctx.moveTo(ax, Y); ctx.lineTo(ax, Y + Ht); ctx.stroke();
-  ctx.fillStyle = '#5b6b85'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  const fmt = v => Math.abs(v) < 1e-9 ? '0' : +v.toPrecision(4) + '';
-  for (let v = Math.ceil(x0 / gx) * gx; v <= x1; v += gx) if (Math.abs(v) > 1e-9) ctx.fillText(fmt(v), sx(v), Math.min(ay + 4 * k, Y + Ht - fz - 2));
-  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-  for (let v = Math.ceil(lo / gy) * gy; v <= hi; v += gy) if (Math.abs(v) > 1e-9) ctx.fillText(fmt(v), Math.max(ax - 5 * k, X + 4 * fz), sy(v));
-  pts.forEach((a, j) => {
-    ctx.strokeStyle = cols[j]; ctx.lineWidth = Math.max(2, 3.6 * k); ctx.lineJoin = 'round'; ctx.beginPath(); let on = false, py = 0;
-    a.forEach((y, i) => { const x = x0 + (x1 - x0) * i / N; if (!isFinite(y) || (on && Math.abs(y - py) > (hi - lo) * 1.5)) { on = false; if (!isFinite(y)) return } const X1 = sx(x), Y1 = sy(y); on ? ctx.lineTo(X1, Y1) : ctx.moveTo(X1, Y1); on = true; py = y });
-    ctx.stroke();
-  });
-  ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.font = `700 ${Math.max(10, 18 * k)}px "IBM Plex Sans Arabic",sans-serif`;
-  fs.forEach((f, j) => { ctx.fillStyle = 'rgba(255,255,255,.85)'; const t = 'y = ' + f, w = ctx.measureText(t).width; ctx.fillRect(X + 8 * k, Y + (8 + j * 26) * k, w + 10 * k, 24 * k); ctx.fillStyle = fns[j] ? cols[j] : '#999'; ctx.fillText(t, X + 13 * k, Y + (10 + j * 26) * k) });
-  ctx.restore(); ctx.save(); ctx.strokeStyle = '#c9d3e6'; ctx.lineWidth = Math.max(1, 1.5 * k); ctx.strokeRect(X, Y, Wd, Ht); ctx.restore();
-}
-function openGraph() {
-  const last = ls.get('rb_fx') || 'x^2 - 4';
-  modal(`<div class="gform"><h3>${svgI('graph')} رسم دالة</h3>
-    <div class="grow"><b dir="ltr">y =</b><input class="inp" id="gF" dir="ltr" value="${esc(last)}" placeholder="x^2 - 4 ; 2x + 1"></div>
-    <div class="ex">${['x^2 - 4', '2x + 1', 'sqrt(x)', '1/x', 'sin(x)', 'abs(x) ; -x + 3'].map(x => `<button data-ex="${esc(x)}">${esc(x)}</button>`).join('')}</div>
-    <div class="grow"><span>من</span><input class="inp num xr" id="gA" value="${ls.get('rb_fxa') || -10}" dir="ltr"><span>إلى</span><input class="inp num xr" id="gB" value="${ls.get('rb_fxb') || 10}" dir="ltr"></div>
-    <small class="muted">اكتب الدالة كما تكتبها على الورق، وافصل بين أكثر من دالة بفاصلة منقوطة ;</small>
-    <canvas id="gPrev" width="500" height="350"></canvas><p class="err" id="gErr"></p>
-    <div class="row"><button class="btn" data-close>إلغاء</button><button class="btn pri" id="gGo">${svgI('graph')} ارسم</button></div></div>`, (v, close) => {
-    const $v = q => v.querySelector(q), item = () => ({ t: 'graph', x: Math.round((W - 820) / 2), y: Math.round((H - 560) / 2), gw: 820, gh: 560, f: $v('#gF').value.trim(), x0: +$v('#gA').value || -10, x1: +$v('#gB').value || 10 });
-    const prev = () => { const it = item(), c = $v('#gPrev'), x = c.getContext('2d'); x.clearRect(0, 0, 500, 350); let ok = true; it.f.split(';').filter(t => t.trim()).forEach(f => { try { compileFx(f.trim()) } catch (e) { ok = false } }); $v('#gErr').textContent = ok && it.f ? '' : 'الدالة غير مفهومة'; drawGraph(x, { ...it, x: 0, y: 0, gw: 500, gh: 350 }, 1); return ok && !!it.f };
-    ['#gF', '#gA', '#gB'].forEach(q => $v(q).addEventListener('input', prev));
-    v.querySelectorAll('[data-ex]').forEach(b => b.onclick = () => { $v('#gF').value = b.dataset.ex; prev() });
-    $v('#gGo').onclick = () => { if (!prev()) return; const it = item(); ls.set('rb_fx', it.f); ls.set('rb_fxa', it.x0); ls.set('rb_fxb', it.x1); tBoard.commit(uid(), it); close(); toast('📈 تم رسم الدالة') };
-    $v('#gF').onkeydown = e => { if (e.key === 'Enter') $v('#gGo').click() };
-    prev(); setTimeout(() => $v('#gF').focus(), 30);
-  });
-}
 /* ======================= class name list ======================= */
 async function openClassList() {
   if (!T.code) return;
@@ -145,21 +75,6 @@ async function classPicker(code) {
   pk.innerHTML = `<option value="" disabled selected>اختر اسمك من القائمة</option>` + cl.names.map(n => `<option ${used.has(n) ? 'disabled' : ''} value="${esc(n)}">${esc(n)}${used.has(n) ? ' ✓' : ''}</option>`).join('');
   pk.hidden = false; inp.hidden = true; inp.value = '';
 }
-/* ======================= curtain ======================= */
-function drawCurtain(c, isT) {
-  const host = isT ? $('#tBoard') : $('#sBoard'); if (!host) return; let el = host.querySelector('.curt');
-  if (!c || !c.on) { if (el) el.remove(); return }
-  if (!el) {
-    el = document.createElement('div'); el.className = 'curt ' + (isT ? 't' : 's'); el.innerHTML = isT ? '<span class="ch">⇕ اسحب لكشف السبورة للطلاب</span>' : '🎭'; host.appendChild(el);
-    if (isT) { const h = el.firstElementChild; let drag = false, lt = 0;
-      h.addEventListener('pointerdown', e => { drag = true; h.setPointerCapture(e.pointerId); e.preventDefault() });
-      h.addEventListener('pointermove', e => { if (!drag) return; const r = host.getBoundingClientRect(), y = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)); el.style.top = y * 100 + '%'; const n = performance.now(); if (n - lt > 90) { lt = n; DB.update(`sessions/${T.code}/meta/curtain`, { y: Math.round(y * 1000) / 1000 }) } });
-      const up = e => { if (!drag) return; drag = false; const r = host.getBoundingClientRect(), y = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)); DB.update(`sessions/${T.code}/meta/curtain`, { y: Math.round(y * 1000) / 1000 }) };
-      h.addEventListener('pointerup', up); h.addEventListener('pointercancel', up); }
-  }
-  if (!isT || !el.firstElementChild.hasPointerCapture) el.style.top = (Math.max(0, Math.min(1, +c.y || 0)) * 100) + '%';
-}
-function toggleCurtain() { if (!T.code) return; const on = !(T.meta && T.meta.curtain && T.meta.curtain.on); DB.update(`sessions/${T.code}/meta`, { curtain: on ? { on: true, y: 0.12 } : null }) }
 /* ======================= laser pointer ======================= */
 const LZ = { t: 0, hide: 0 };
 function laserAt(host, x, y) {
@@ -178,16 +93,9 @@ def apply(s, rep, target):
     s = rep(s, '.selbox{', CSS.strip() + '\n.selbox{')
     s = rep(s, '    <symbol id="i-img" viewBox', ICONS + '    <symbol id="i-img" viewBox')
     # graph item
-    s = rep(s, "  if (s.t === 'media') return drawMedia(ctx, s, k);", "  if (s.t === 'media') return drawMedia(ctx, s, k);\n  if (s.t === 'graph') return drawGraph(ctx, s, k);") if target == 'bp' else \
-        rep(s, "function drawStroke(ctx, s, k) {\n  if (!s || !s.t) return;", "function drawStroke(ctx, s, k) {\n  if (!s || !s.t) return;\n  if (s.t === 'graph') return drawGraph(ctx, s, k);")
-    s = rep(s, "function strokeBox(s) {\n", "function strokeBox(s) {\n  if (s.t === 'graph') return [s.x, s.y, s.x + (s.gw || 800), s.y + (s.gh || 560)];\n")
-    if target == 'bp':
-        s = rep(s, "if (s.wd) o.wd = Math.round(s.wd * k) }", "if (s.wd) o.wd = Math.round(s.wd * k); if (s.gw) { o.gw = Math.round(s.gw * k); o.gh = Math.round(s.gh * k) } }")
     # teacher buttons
     s = rep(s, "      { icon: 'bg', label: 'خلفية السبورة', onClick: pickBg },\n",
             "      { icon: 'bg', label: 'خلفية السبورة', onClick: pickBg },\n"
-            "      { icon: 'graph', label: 'رسم دالة', color: '#2f5bd3', onClick: openGraph },\n"
-            "      { icon: 'curtain', label: 'ستارة: أخفِ السبورة عن الطلاب واكشفها بالتدريج', color: '#7d2a4e', onClick: toggleCurtain },\n"
             "      { icon: 'clist', label: 'قائمة أسماء الفصل', onClick: openClassList },\n")
     # laser tool on the teacher board
     m = re.search(r"    tools: \[([^\]]*'lasso'[^\]]*)\],\n    colors: \['#15213a', '#2f5bd3', '#e0242f'", s); assert m, 'teacher tools'
@@ -203,10 +111,8 @@ def apply(s, rep, target):
     s = rep(s, "  tBoard = new Board($('#tBoard'), { layers: ['bg', 't'], target: 't', tool: tTool.get, onLasso: tLasso,",
             "  tBoard = new Board($('#tBoard'), { layers: ['bg', 't'], target: 't', tool: tTool.get, onLasso: tLasso, onLaser: sendLaser,")
     # curtain on both sides (from meta)
-    s = rep(s, "    if (T.bg.type !== m.bgType) { T.bg.type = m.bgType; baseChanged() }\n", "    if (T.bg.type !== m.bgType) { T.bg.type = m.bgType; baseChanged() }\n    drawCurtain(m.curtain, true);\n")
-    s = rep(s, "    S.meta = mt; S.board.locked = !!mt.locked;", "    drawCurtain(mt.curtain, false);\n    S.meta = mt; S.board.locked = !!mt.locked;")
     # student: laser + leave clean
-    s = rep(s, "  S.unsubs.push(DB.onValue(b + '/meta', mt => {", "  S.unsubs.push(DB.onValue(b + '/laser', v => { if (v && v.t && DB.now() - v.t < 4000) laserAt($('#sBoard'), v.x, v.y) }));\n  S.unsubs.push(() => drawCurtain(null, false));\n  S.unsubs.push(DB.onValue(b + '/meta', mt => {")
+    s = rep(s, "  S.unsubs.push(DB.onValue(b + '/meta', mt => {", "  S.unsubs.push(DB.onValue(b + '/laser', v => { if (v && v.t && DB.now() - v.t < 4000) laserAt($('#sBoard'), v.x, v.y) }));\n  S.unsubs.push(DB.onValue(b + '/meta', mt => {")
     # join: pick the name from the class list
     if target == 'rb':
         s = rep(s, "  if (nm) { inp.value = nm; inp.readOnly = true;", "  if (nm) { const pk = $('#jPick'); if (pk) pk.hidden = true; inp.hidden = false; inp.value = nm; inp.readOnly = true;")
