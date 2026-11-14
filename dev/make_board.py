@@ -399,6 +399,8 @@ import feat_cal
 s = feat_cal.apply(s, _r1)
 import feat_select
 s = feat_select.apply(s, _r1)
+import feat_lawhati
+s = feat_lawhati.apply(s, _r1, 'bp')
 
 # sanity: no leftovers
 for bad in ['__AVATAR__', 'ADMIN_HASH', 'ADMIN_EMAIL', 'emailOf(', 'createUser', 'AVATAR_SRC', 'quizragab.html', "'teacher/q"]:
