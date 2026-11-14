@@ -33,6 +33,14 @@ CSS = r"""
 .gform .ex button{border:1px solid var(--line);background:var(--surface-2);border-radius:99px;padding:4px 12px;font:inherit;font-size:13px;direction:ltr;cursor:pointer}
 .clform{display:flex;flex-direction:column;gap:10px}
 .clform textarea{min-height:200px;resize:vertical;font:inherit;line-height:1.6}
+.jlist{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.jlist[hidden]{display:none}
+.jlh{font-size:13px;font-weight:700;color:var(--muted)}
+.jnames{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;max-height:44vh;overflow:auto;padding:2px}
+.jn{min-height:44px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);font:inherit;font-weight:600;font-size:15px;color:var(--ink);cursor:pointer;padding:6px 8px}
+.jn.on{border-color:var(--accent);background:var(--accent);color:#fff}
+.jn:disabled{opacity:.45;cursor:default}
+.jn[hidden]{display:none}
 .jpick{width:100%;height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);font:inherit;font-size:16px;padding:0 12px;color:var(--ink)}
 .curt{position:absolute;left:0;right:0;bottom:0;z-index:5;pointer-events:none;display:grid;place-items:center;font-size:42px;border-radius:inherit}
 .curt.s{background:repeating-linear-gradient(90deg,#6b2342 0 26px,#7d2a4e 26px 52px);box-shadow:inset 0 10px 18px rgba(0,0,0,.35)}
@@ -66,14 +74,19 @@ async function openClassList() {
   });
 }
 async function classPicker(code) {
-  let pk = $('#jPick'); const inp = $('#jName');
+  const inp = $('#jName'), go = $('#jGo'); let box = $('#jList');
+  if (!go.dataset.t0) go.dataset.t0 = go.textContent;
+  const free = () => { if (box) box.hidden = true; inp.hidden = false; go.textContent = go.dataset.t0 };
   const cl = /^\d{6}$/.test(code || '') ? await DB.get(`sessions/${code}/clist`).catch(() => null) : null;
   if ($('#jCode').value.replace(/\D/g, '') !== code) return;
-  if (!cl || !cl.names || !cl.names.length || inp.readOnly) { if (pk) pk.hidden = true; inp.hidden = false; return }
+  if (!cl || !cl.names || !cl.names.length || inp.readOnly) return free();
   const roster = (await DB.get(`sessions/${code}/roster`).catch(() => null)) || {}, used = new Set(Object.values(roster).filter(r => r && r.online).map(r => r.name));
-  if (!pk) { pk = document.createElement('select'); pk.id = 'jPick'; pk.className = 'jpick'; inp.after(pk); pk.onchange = () => { inp.value = pk.value } }
-  pk.innerHTML = `<option value="" disabled selected>اختر اسمك من القائمة</option>` + cl.names.map(n => `<option ${used.has(n) ? 'disabled' : ''} value="${esc(n)}">${esc(n)}${used.has(n) ? ' ✓' : ''}</option>`).join('');
-  pk.hidden = false; inp.hidden = true; inp.value = '';
+  if (!box) { box = document.createElement('div'); box.id = 'jList'; box.className = 'jlist'; inp.after(box) }
+  box.innerHTML = `<div class="jlh">👥 ${esc(cl.name || '')} · اختر اسمك ثم اضغط تأكيد</div>${cl.names.length > 12 ? '<input class="inp jsearch" placeholder="ابحث عن اسمك">' : ''}
+    <div class="jnames">${cl.names.map(n => `<button type="button" class="jn" ${used.has(n) ? 'disabled' : ''} data-n="${esc(n)}">${esc(n)}${used.has(n) ? ' ✓' : ''}</button>`).join('')}</div>`;
+  box.hidden = false; inp.hidden = true; inp.value = ''; go.textContent = 'تأكيد ✓';
+  box.querySelectorAll('.jn').forEach(b => b.onclick = () => { box.querySelectorAll('.jn').forEach(x => x.classList.toggle('on', x === b)); inp.value = b.dataset.n; go.focus() });
+  const q = box.querySelector('.jsearch'); if (q) q.oninput = () => { const t = q.value.trim(); box.querySelectorAll('.jn').forEach(b => b.hidden = !!t && !b.dataset.n.includes(t)) };
 }
 /* ======================= laser pointer ======================= */
 const LZ = { t: 0, hide: 0 };
@@ -115,7 +128,7 @@ def apply(s, rep, target):
     s = rep(s, "  S.unsubs.push(DB.onValue(b + '/meta', mt => {", "  S.unsubs.push(DB.onValue(b + '/laser', v => { if (v && v.t && DB.now() - v.t < 4000) laserAt($('#sBoard'), v.x, v.y) }));\n  S.unsubs.push(DB.onValue(b + '/meta', mt => {")
     # join: pick the name from the class list
     if target == 'rb':
-        s = rep(s, "  if (nm) { inp.value = nm; inp.readOnly = true;", "  if (nm) { const pk = $('#jPick'); if (pk) pk.hidden = true; inp.hidden = false; inp.value = nm; inp.readOnly = true;")
+        s = rep(s, "  if (nm) { inp.value = nm; inp.readOnly = true;", "  if (nm) { const pk = $('#jList'); if (pk) pk.hidden = true; inp.hidden = false; inp.value = nm; inp.readOnly = true;")
     s = rep(s, "async function lookupTeacher(code) {\n", "async function lookupTeacher(code) {\n  classPicker(code);\n")
     s = rep(s, "/* ======================= STUDENT ======================= */", JS.strip() + "\n\n/* ======================= STUDENT ======================= */")
     s = rep(s, 'const I18N = {', 'const I18N = {' + json.dumps(ADD_I18N, ensure_ascii=False)[1:-1] + ',')
