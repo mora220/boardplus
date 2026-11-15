@@ -181,6 +181,14 @@ body.blurthumbs .sc::after{content:"مخفية";position:absolute;top:34%;left:5
 .inkbar button{border:0;background:transparent;border-radius:8px;width:32px;height:32px;display:grid;place-items:center;color:var(--ink)}
 .inkbar button:hover{background:var(--surface-2)}
 .inkbar button.on{background:var(--accent-soft);color:var(--accent)}
+#qzRun #rInk{position:relative;inset:auto;z-index:21;align-self:center;justify-self:center;width:max-content;max-width:100%;flex-wrap:wrap;justify-content:center;margin:0 auto}
+#qzRun #rInk[hidden]{display:none}
+#rInk .isep{width:1px;background:var(--line);margin:4px 3px}
+#rInk button.wide{width:auto;padding:0 10px;font-size:13px;font-weight:700;white-space:nowrap}
+#rInk .fl0{display:none}#rInk button.wide:not(.on) .fl1{display:none}#rInk button.wide:not(.on) .fl0{display:inline}
+#qzRun .qz-body{position:relative}
+#rOver{position:absolute;inset:0;width:100%;height:100%;z-index:20;pointer-events:none;touch-action:none}
+#rOver.on{pointer-events:auto;cursor:crosshair}
 .inkbar .sw{width:18px;height:18px;border-radius:50%;display:block}
 .inkbar button.on .sw{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink)}
 .opts.two{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -627,12 +635,13 @@ button.opt:disabled{cursor:default}
 .whoans{display:flex;flex-wrap:wrap;gap:8px;flex:none}
 .qside{display:none}
 @media (min-width:900px){
-  #qzRun .qz-body{display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr) minmax(150px,220px);grid-template-rows:minmax(0,1fr) auto;max-width:none;gap:12px}
-  #qzRun #rStage{grid-column:2;grid-row:1;min-height:0}
-  #qzRun #rOpts{grid-column:2;grid-row:2}
+  #qzRun .qz-body{display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr) minmax(150px,220px);grid-template-rows:auto minmax(0,1fr) auto;max-width:none;gap:12px}
+  #qzRun #rStage{grid-column:2;grid-row:2;min-height:0}
+  #qzRun #rInk{grid-column:2;grid-row:1}
+  #qzRun #rOpts{grid-column:2;grid-row:3}
   #qzRun #rWho{display:none}
-  #qzRun #rRankW{grid-column:1/4;grid-row:1/3}
-  #qzRun .qside{display:flex;flex-direction:column;gap:6px;grid-row:1/3;min-height:0;overflow:auto;border-radius:16px;padding:10px;border:1.5px solid var(--line);background:var(--surface)}
+  #qzRun #rRankW{grid-column:1/4;grid-row:1/4}
+  #qzRun .qside{display:flex;flex-direction:column;gap:6px;grid-row:1/4;min-height:0;overflow:auto;border-radius:16px;padding:10px;border:1.5px solid var(--line);background:var(--surface)}
   #qzRun .qside[hidden]{display:none}
   #qzRun .qdone{grid-column:1;border-color:var(--ok);background:var(--ok-soft)}
   #qzRun .qnot{grid-column:3}
@@ -891,8 +900,9 @@ button.opt:disabled{cursor:default}
     <button class="btn" id="rEnd">إنهاء الكويز</button>
   </header>
   <div class="qz-body gut">
+    <div class="inkbar" id="rInk"><button data-it="pen" title="قلم"><svg class="ico"><use href="#i-pen"/></svg></button><button data-it="cal" title="قلم الخط العربي"><svg class="ico"><use href="#i-cal"/></svg></button><button data-it="er" title="ممسحة"><svg class="ico"><use href="#i-er"/></svg></button><i class="isep"></i><button data-ic="#e0242f" title="أحمر"><span class="sw" style="background:#e0242f"></span></button><button data-ic="#2f5bd3" title="أزرق"><span class="sw" style="background:#2f5bd3"></span></button><button data-ic="#1f9d55" title="أخضر"><span class="sw" style="background:#1f9d55"></span></button><button data-ic="#15213a" title="أسود"><span class="sw" style="background:#15213a"></span></button><i class="isep"></i><button data-ink="full" class="wide" title="مكان الكتابة: الشاشة كلها (تظهر في مشاركة الشاشة) أو السؤال فقط (يظهر على أجهزة الطلاب)"><span class="fl1">🖥 الشاشة كلها</span><span class="fl0">📱 على السؤال</span></button><i class="isep"></i><button data-ink="undo" title="تراجع"><svg class="ico"><use href="#i-undo"/></svg></button><button data-ink="clear" title="مسح الكتابة"><svg class="ico"><use href="#i-trash"/></svg></button></div>
+    <canvas id="rOver"></canvas>
     <div class="stage qstage" id="rStage"><div id="rBoard"></div>
-      <div class="inkbar" id="rInk"><button data-ink="pen" title="قلم: اكتب على السؤال ويظهر للطلاب"><svg class="ico"><use href="#i-pen"/></svg></button><button data-ic="#e0242f" title="أحمر"><span class="sw" style="background:#e0242f"></span></button><button data-ic="#2f5bd3" title="أزرق"><span class="sw" style="background:#2f5bd3"></span></button><button data-ic="#1f9d55" title="أخضر"><span class="sw" style="background:#1f9d55"></span></button><button data-ink="undo" title="تراجع"><svg class="ico"><use href="#i-undo"/></svg></button><button data-ink="clear" title="مسح الكتابة"><svg class="ico"><use href="#i-trash"/></svg></button></div>
     </div>
     <div class="opts" id="rOpts"></div>
     <div class="whoans" id="rWho"></div>
@@ -2699,6 +2709,34 @@ async function delActive() {
 function denseRank(list) { let pl = 0, prev = null; return (list || []).map(r => { if (r.t !== prev) { pl++; prev = r.t } return { ...r, pl } }) }
 const placeOf = (list, sid) => { const r = denseRank(list).find(x => x.sid === sid); return r ? r.pl : 0 };
 
+/* ======================= quiz pens: whole screen or the question ======================= */
+const QI = { t: 'pen', full: ls.get('rb_qfull') !== '0', map: new Map(), hist: [], qid: null, cur: null };
+function qInkTool(full) { return { t: QI.t, c: QZ.inkC, w: QI.t === 'er' ? 7 : full ? (QI.t === 'cal' ? 4 : 4) : (QI.t === 'cal' ? 5 : 6) } }
+function setInk(on) {
+  QZ.inkOn = on; QZ.board.locked = !on || QI.full; $('#rBoard').classList.toggle('inkon', on && !QI.full);
+  $('#rOver').classList.toggle('on', on && QI.full); if (on && QI.full) qOverSize();
+  $('#rInk').querySelectorAll('button').forEach(b => b.classList.toggle('on', (on && b.dataset.it === QI.t) || (on && QI.t !== 'er' && b.dataset.ic === QZ.inkC) || (b.dataset.ink === 'full' && QI.full)));
+}
+function qOverSize() { const c = $('#rOver'), r = c.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2), w = Math.round(r.width * d), h = Math.round(r.height * d); if (w && (c.width !== w || c.height !== h)) { c.width = w; c.height = h } qOverDraw() }
+function qOverDraw() { const c = $('#rOver'), x = c.getContext('2d'), d = c.width / Math.max(1, c.getBoundingClientRect().width); x.clearRect(0, 0, c.width, c.height); QI.map.forEach(s => drawStroke(x, s, d)) }
+function qInkInit() {
+  const ov = $('#rOver'), pt = e => { const r = ov.getBoundingClientRect(); return [Math.round(e.clientX - r.left), Math.round(e.clientY - r.top)] };
+  ov.addEventListener('pointerdown', e => { if (!QZ.inkOn || !QI.full || QI.cur) return; e.preventDefault(); ov.setPointerCapture(e.pointerId); const id = 'o' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); QI.cur = { id, s: { ...qInkTool(true), p: pt(e) } }; QI.map.set(id, QI.cur.s); qOverDraw() });
+  ov.addEventListener('pointermove', e => { if (!QI.cur) return; (e.getCoalescedEvents ? e.getCoalescedEvents() : [e]).forEach(ev => QI.cur.s.p.push(...pt(ev))); qOverDraw() });
+  ['pointerup', 'pointercancel'].forEach(t => ov.addEventListener(t, () => { if (QI.cur) { QI.hist.push(QI.cur.id); QI.cur = null } }));
+  $('#rInk').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.ic) { QZ.inkC = b.dataset.ic; if (QI.t === 'er') QI.t = 'pen'; setInk(true) }
+    else if (b.dataset.it) { if (QZ.inkOn && QI.t === b.dataset.it) setInk(false); else { QI.t = b.dataset.it; setInk(true) } }
+    else if (b.dataset.ink === 'full') { QI.full = !QI.full; ls.set('rb_qfull', QI.full ? '1' : '0'); setInk(QZ.inkOn); toast(QI.full ? '🖥 الكتابة على الشاشة كلها، تظهر في مشاركة الشاشة' : '📱 الكتابة على السؤال، وتظهر على أجهزة الطلاب') }
+    else if (b.dataset.ink === 'undo') { if (QI.full) { const id = QI.hist.pop(); if (id) { QI.map.delete(id); qOverDraw() } } else QZ.board.undo() }
+    else if (b.dataset.ink === 'clear') { QI.map.clear(); QI.hist = []; qOverDraw(); if (QZ.run) { DB.remove(`sessions/${T.code}/qink/${QZ.run.qid}`); QZ.board.clearHist() } }
+  };
+  setInterval(() => { const q = QZ.run ? QZ.run.qid : null; if (q !== QI.qid) { QI.qid = q; QI.map.clear(); QI.hist = []; qOverDraw(); if (!q && QZ.inkOn) setInk(false) } }, 300);
+  addEventListener('resize', () => { if (QI.map.size || QZ.inkOn) qOverSize() });
+  setInk(false);
+}
+
 /* ======================= STUDENT ======================= */
 const S = { code: null, sid: null, meta: {}, tMap: new Map(), mine: new Map(), marks: new Map(), bg: { type: 'grid', img: null }, unsubs: [], board: null, tool: null, seen: false, ready: false };
 function initStudentUI() {
@@ -3332,22 +3370,12 @@ function initQuizUI() {
   $('#lbReset').onclick = async () => { if (await ask('تصفير كل النقاط؟', 'ستُحذف نقاط السبورة والكويز لكل الطلاب في هذه الجلسة.', 'تصفير')) { DB.remove(`sessions/${T.code}/pts`); DB.remove(`sessions/${T.code}/qpts`) } };
   // pen on the question
   QZ.ink = new Map(); QZ.inkC = '#e0242f'; QZ.inkOn = false;
-  QZ.board = new Board($('#rBoard'), { layers: ['bg', 'm'], target: 'm', tool: () => ({ t: 'pen', c: QZ.inkC, w: 6 }), sink: {
+  QZ.board = new Board($('#rBoard'), { layers: ['bg', 'm'], target: 'm', tool: () => qInkTool(false), sink: {
     write: (id, s) => { if (QZ.run) DB.set(`sessions/${T.code}/qink/${QZ.run.qid}/${id}`, s) },
     remove: id => { if (QZ.run) DB.remove(`sessions/${T.code}/qink/${QZ.run.qid}/${id}`) } } });
   QZ.board.set('m', QZ.ink); QZ.board.locked = true;
-  $('#rInk').onclick = e => {
-    const b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.ic) { QZ.inkC = b.dataset.ic; setInk(true) }
-    else if (b.dataset.ink === 'pen') setInk(!QZ.inkOn);
-    else if (b.dataset.ink === 'undo') QZ.board.undo();
-    else if (b.dataset.ink === 'clear' && QZ.run) { DB.remove(`sessions/${T.code}/qink/${QZ.run.qid}`); QZ.board.clearHist() }
-  };
+  qInkInit();
   setInterval(runTick, 200);
-}
-function setInk(on) {
-  QZ.inkOn = on; QZ.board.locked = !on; $('#rBoard').classList.toggle('inkon', on);
-  $('#rInk').querySelectorAll('button').forEach(b => b.classList.toggle('on', (b.dataset.ink === 'pen' && on) || (on && b.dataset.ic === QZ.inkC)));
 }
 function openBuilder() {
   $('#qzBuild').hidden = false; QZ.sel = new Set(); renderBank();
@@ -3514,7 +3542,7 @@ function renderRun() {
   { const st = [...T.st.values()].filter(s => s.info && s.info.name), dn = st.filter(s => A[s.sid]).sort((x, y) => (A[x.sid].at || 0) - (A[y.sid].at || 0)), nt = st.filter(s => !A[s.sid]);
     $('#rDone').innerHTML = `<h4>✅ أجابوا <b>${dn.length}</b></h4>` + dn.map(s => `<span class="qn">${esc(s.info.name)}</span>`).join('');
     $('#rNot').innerHTML = `<h4>⏳ لم يجيبوا <b>${nt.length}</b></h4>` + nt.map(s => `<span class="qn">${esc(s.info.name)}</span>`).join('');
-    $('#rDone').hidden = $('#rNot').hidden = rank; }
+    $('#rDone').hidden = $('#rNot').hidden = rank; if ($('#rInk')) $('#rInk').hidden = rank; }
   $('#rReveal').hidden = rev; $('#rNext').hidden = !rev; $('#rPeek').hidden = rev;
   const more = nextIdx() >= 0; $('#rNext').lastElementChild.textContent = rank ? (more ? 'السؤال التالي' : 'لوحة الصدارة 🏆') : (more ? 'الترتيب 📊' : 'لوحة الصدارة 🏆');
 }

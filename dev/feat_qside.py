@@ -4,12 +4,13 @@ on one side and those who have not answered yet on the other."""
 CSS = r"""
 .qside{display:none}
 @media (min-width:900px){
-  #qzRun .qz-body{display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr) minmax(150px,220px);grid-template-rows:minmax(0,1fr) auto;max-width:none;gap:12px}
-  #qzRun #rStage{grid-column:2;grid-row:1;min-height:0}
-  #qzRun #rOpts{grid-column:2;grid-row:2}
+  #qzRun .qz-body{display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr) minmax(150px,220px);grid-template-rows:auto minmax(0,1fr) auto;max-width:none;gap:12px}
+  #qzRun #rStage{grid-column:2;grid-row:2;min-height:0}
+  #qzRun #rInk{grid-column:2;grid-row:1}
+  #qzRun #rOpts{grid-column:2;grid-row:3}
   #qzRun #rWho{display:none}
-  #qzRun #rRankW{grid-column:1/4;grid-row:1/3}
-  #qzRun .qside{display:flex;flex-direction:column;gap:6px;grid-row:1/3;min-height:0;overflow:auto;border-radius:16px;padding:10px;border:1.5px solid var(--line);background:var(--surface)}
+  #qzRun #rRankW{grid-column:1/4;grid-row:1/4}
+  #qzRun .qside{display:flex;flex-direction:column;gap:6px;grid-row:1/4;min-height:0;overflow:auto;border-radius:16px;padding:10px;border:1.5px solid var(--line);background:var(--surface)}
   #qzRun .qside[hidden]{display:none}
   #qzRun .qdone{grid-column:1;border-color:var(--ok);background:var(--ok-soft)}
   #qzRun .qnot{grid-column:3}
@@ -27,7 +28,7 @@ JS_RENDER = r"""
   { const st = [...T.st.values()].filter(s => s.info && s.info.name), dn = st.filter(s => A[s.sid]).sort((x, y) => (A[x.sid].at || 0) - (A[y.sid].at || 0)), nt = st.filter(s => !A[s.sid]);
     $('#rDone').innerHTML = `<h4>✅ أجابوا <b>${dn.length}</b></h4>` + dn.map(s => `<span class="qn">${esc(s.info.name)}</span>`).join('');
     $('#rNot').innerHTML = `<h4>⏳ لم يجيبوا <b>${nt.length}</b></h4>` + nt.map(s => `<span class="qn">${esc(s.info.name)}</span>`).join('');
-    $('#rDone').hidden = $('#rNot').hidden = rank; }
+    $('#rDone').hidden = $('#rNot').hidden = rank; if ($('#rInk')) $('#rInk').hidden = rank; }
 """
 
 
