@@ -37,7 +37,7 @@ async def main():
     await s2.wait_for_timeout(7000)   # q3 lim 5s -> timeout
     print('s2 records:', await s2.evaluate("JSON.stringify(Object.entries(RACE.a[S.sid]).filter(([k])=>/^\\d/.test(k)).map(([k,v])=>[k,v.c,v.ok,v.pts]))"))
     await t.screenshot(path=SP + 'race_teacher.png')
-    print('teacher table:', [r.replace('\n', ' ').replace('\t', ' ') for r in await t.locator('#raceT tr').all_inner_texts()])
+    print('teacher board:', (await t.inner_text('#raceT')).replace('\n',' | ')); await t.screenshot(path=SP+'race_top5.png')
     await t.click('#rcEnd'); await t.wait_for_timeout(300); await t.click('#askOk'); await t.wait_for_timeout(1500)
     print('s1 final:', (await s1.inner_text('#raceS .center')).replace('\n', ' ')[:80], '| qpts:', await t.evaluate('JSON.stringify(T.qpts)'))
     await t.screenshot(path=SP + 'race_end.png'); await s1.screenshot(path=SP + 'race_end_s.png')

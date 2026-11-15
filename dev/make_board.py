@@ -415,6 +415,8 @@ import feat_qink
 s = feat_qink.apply(s, _r1, 'bp')
 import feat_rgames
 s = feat_rgames.apply(s, _r1)
+import feat_tug
+s = feat_tug.apply(s, _r1)
 
 # sanity: no leftovers
 for bad in ['__AVATAR__', 'ADMIN_HASH', 'ADMIN_EMAIL', 'emailOf(', 'createUser', 'AVATAR_SRC', 'quizragab.html', "'teacher/q"]:
