@@ -405,6 +405,8 @@ import feat_att
 s = feat_att.apply(s, _r1, 'bp')
 import feat_classes
 s = feat_classes.apply(s, _r1, 'bp')
+import feat_imgs
+s = feat_imgs.apply(s, _r1, 'bp')
 
 # sanity: no leftovers
 for bad in ['__AVATAR__', 'ADMIN_HASH', 'ADMIN_EMAIL', 'emailOf(', 'createUser', 'AVATAR_SRC', 'quizragab.html', "'teacher/q"]:

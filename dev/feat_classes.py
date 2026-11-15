@@ -7,7 +7,7 @@ ADD_I18N = {
     "✍️ دخول حر: الطالب يكتب اسمه": "✍️ Free entry: students type their name", "إضافة فصل": "Add a class", "تعديل": "Edit",
     "لأي فصل هذه الحصة؟": "Which class is this lesson for?", "الطلاب يختارون أسماءهم من قائمة الفصل": "Students pick their name from the class list",
     "حذف الفصل؟": "Delete the class?", "تأكيد": "Confirm", "تأكيد ✓": "Confirm ✓", "اختر اسمك ثم اضغط تأكيد": "Choose your name, then press confirm",
-    "ابحث عن اسمك": "Search for your name", "طالب": "students", "حفظ": "Save",
+    "ابحث عن اسمك": "Search for your name", "طالب": "students", "حفظ": "Save", "اربط الطالب باسمه": "Link the student to his name", "✍️ اكتب اسمًا آخر": "✍️ Type another name", "اختر اسمك من القائمة.": "Choose your name from the list.",
 }
 
 CSS = r"""
@@ -58,13 +58,26 @@ function editClass(id, c) {
     <label>اكتب كل اسم في سطر<textarea class="inp" id="ceNames">${esc(((c && c.names) || []).join('\n'))}</textarea></label>
     <div class="row"><button class="btn" data-close>إلغاء</button><button class="btn pri" id="ceOk">حفظ</button></div></div>`, (v, close) => {
     v.querySelector('#ceOk').onclick = async () => {
-      const names = [...new Set(v.querySelector('#ceNames').value.split(/\n+/).map(x => x.trim().replace(/\s+/g, ' ').slice(0, 30)).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ar'));
+      const names = [...new Set(v.querySelector('#ceNames').value.split(/\n+/).map(x => x.trim().replace(/\s+/g, ' ').slice(0, 30)).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ar', { numeric: true }));
       if (!names.length) return toast('اكتب الأسماء أولًا', true);
       const cid = id || 'c' + uid(), name = v.querySelector('#ceName').value.trim().slice(0, 40) || 'الفصل';
       await DB.set(`${BANK()}/classes/${cid}`, { name, names });
       if (T.clist && T.clist.id === cid) await DB.set(`sessions/${T.code}/clist`, { id: cid, name, names });
       close(); openClasses({ pick: cid });
     };
+  });
+}
+function pickClassName(cur) {
+  return new Promise(res => {
+    const names = T.clist.names, taken = new Map(); T.st.forEach((x, sid) => { const n = x.info && x.info.name; if (n) taken.set(n, sid) });
+    modal(`<h3>👥 اربط الطالب باسمه</h3><p class="muted">اسمه الآن: <b>${esc(cur || '')}</b> · اختر اسمه من قائمة ${esc(T.clist.name || 'الفصل')}</p>
+      <div class="jnames" style="max-height:52vh;overflow:auto">${names.map(n => `<button type="button" class="jn ${n === cur ? 'on' : ''}" data-n="${esc(n)}">${esc(n)}${taken.has(n) && n !== cur ? ' ✓' : ''}</button>`).join('')}</div>
+      <div class="row"><button class="btn" id="pcType">✍️ اكتب اسمًا آخر</button><span class="grow"></span><button class="btn" data-close>إلغاء</button></div>`, (v, close) => {
+      let done = false; const fin = x => { if (done) return; done = true; close(); res(x) };
+      v.querySelectorAll('.jn').forEach(b => b.onclick = () => fin(b.dataset.n));
+      v.querySelector('#pcType').onclick = async () => { done = true; close(); res(await askText('اسم الطالب', cur, 'حفظ الاسم')) };
+      v.querySelector('[data-close]').addEventListener('click', () => fin(null));
+    });
   });
 }
 async function afterNewSession() {
@@ -88,4 +101,11 @@ def apply(s, rep, target):
         rep(s, "    attach(code || await createSession());\n  } catch (e) {", "    const fresh = !code; attach(code || await createSession()); if (fresh) afterNewSession();\n  } catch (e) {")
     s = rep(s, "/* ======================= STUDENT ======================= */", JS.strip() + "\n\n/* ======================= STUDENT ======================= */")
     s = rep(s, 'const I18N = {', 'const I18N = {' + json.dumps(ADD_I18N, ensure_ascii=False)[1:-1] + ',')
+    # the teacher links a student to his name from the class list
+    s = rep(s, "  const name = await askText('اسم الطالب', s.info.name, 'حفظ الاسم'); if (!name || name === s.info.name) return;",
+            "  const name = T.clist && T.clist.names && T.clist.names.length ? await pickClassName(s.info.name) : await askText('اسم الطالب', s.info.name, 'حفظ الاسم'); if (!name || name === s.info.name) return;")
+    # with a class list on, a student can only join with a name from the list
+    s = rep(s, "  if (!name) { err.textContent = 'اكتب اسمك قبل الدخول.'; $('#jName').focus(); return }\n",
+            "  if (!name) { err.textContent = $('#jList') && !$('#jList').hidden ? 'اختر اسمك من القائمة.' : 'اكتب اسمك قبل الدخول.'; $('#jName').focus(); return }\n"
+            "  if (/^\\d{6}$/.test(code) && !$('#jName').readOnly) { const cl = await DB.get(`sessions/${code}/clist`).catch(() => null); if (cl && cl.names && cl.names.length && !cl.names.includes(name)) { err.textContent = 'اختر اسمك من القائمة.'; classPicker(code); return } }\n")
     return s

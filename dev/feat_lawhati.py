@@ -82,11 +82,10 @@ async function classPicker(code) {
   if (!cl || !cl.names || !cl.names.length || inp.readOnly) return free();
   const roster = (await DB.get(`sessions/${code}/roster`).catch(() => null)) || {}, used = new Set(Object.values(roster).filter(r => r && r.online).map(r => r.name));
   if (!box) { box = document.createElement('div'); box.id = 'jList'; box.className = 'jlist'; inp.after(box) }
-  box.innerHTML = `<div class="jlh">👥 ${esc(cl.name || '')} · اختر اسمك ثم اضغط تأكيد</div>${cl.names.length > 12 ? '<input class="inp jsearch" placeholder="ابحث عن اسمك">' : ''}
+  box.innerHTML = `<div class="jlh">👥 ${esc(cl.name || '')} · اختر اسمك ثم اضغط تأكيد</div>
     <div class="jnames">${cl.names.map(n => `<button type="button" class="jn" ${used.has(n) ? 'disabled' : ''} data-n="${esc(n)}">${esc(n)}${used.has(n) ? ' ✓' : ''}</button>`).join('')}</div>`;
   box.hidden = false; inp.hidden = true; inp.value = ''; go.textContent = 'تأكيد ✓';
   box.querySelectorAll('.jn').forEach(b => b.onclick = () => { box.querySelectorAll('.jn').forEach(x => x.classList.toggle('on', x === b)); inp.value = b.dataset.n; go.focus() });
-  const q = box.querySelector('.jsearch'); if (q) q.oninput = () => { const t = q.value.trim(); box.querySelectorAll('.jn').forEach(b => b.hidden = !!t && !b.dataset.n.includes(t)) };
 }
 /* ======================= laser pointer ======================= */
 const LZ = { t: 0, hide: 0 };
