@@ -25,7 +25,7 @@ CSS = r"""
 
 JS_RENDER = r"""
   { const st = [...T.st.values()].filter(s => s.info && s.info.name), dn = st.filter(s => A[s.sid]).sort((x, y) => (A[x.sid].at || 0) - (A[y.sid].at || 0)), nt = st.filter(s => !A[s.sid]);
-    $('#rDone').innerHTML = `<h4>✅ أجابوا <b>${dn.length}</b></h4>` + dn.map(s => { const a = A[s.sid], ok = a.c === q.ans; return `<span class="qn ${rev ? (ok ? 'ok' : 'bad') : ''}">${esc(s.info.name)}${show ? ` · ${optLabel(a.c, k)}` : ''}</span>` }).join('');
+    $('#rDone').innerHTML = `<h4>✅ أجابوا <b>${dn.length}</b></h4>` + dn.map(s => `<span class="qn">${esc(s.info.name)}</span>`).join('');
     $('#rNot').innerHTML = `<h4>⏳ لم يجيبوا <b>${nt.length}</b></h4>` + nt.map(s => `<span class="qn">${esc(s.info.name)}</span>`).join('');
     $('#rDone').hidden = $('#rNot').hidden = rank; }
 """

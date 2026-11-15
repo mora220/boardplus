@@ -678,6 +678,9 @@ button.opt:disabled{cursor:default}
 .pp{font-size:13px;color:var(--muted);font-weight:600}
 .pb{width:100%;border-radius:12px 12px 0 0;background:var(--pc);display:grid;place-items:center;color:#fff;font-family:var(--f-display);font-size:36px;font-weight:700}
 .p1{--pc:#e8a10f}.p1 .pb{height:150px}.p2{--pc:#8f9bb3}.p2 .pb{height:110px}.p3{--pc:#c27a3c}.p3 .pb{height:78px}
+.pn.many{white-space:normal;text-align:center;line-height:1.35;font-size:14px}
+.pd .pc{font-size:12px;color:var(--muted);font-weight:700}
+.rknote{text-align:center;color:var(--muted);font-size:13px;margin-top:6px}
 .pd.me .pn{color:var(--accent)}
 .myrank{text-align:center;font-family:var(--f-display);font-size:18px;font-weight:600;color:var(--accent)}
 .lbl{display:flex;flex-direction:column;gap:8px;max-width:780px;width:100%;margin:0 auto}
@@ -2692,6 +2695,10 @@ async function delActive() {
   await DB.update(b, { bgImg: top.img.src, 'meta/imgT': top.tr || null, [`imgs/${top.id}`]: null });
 }
 
+/* ======================= places: equal scores share a place ======================= */
+function denseRank(list) { let pl = 0, prev = null; return (list || []).map(r => { if (r.t !== prev) { pl++; prev = r.t } return { ...r, pl } }) }
+const placeOf = (list, sid) => { const r = denseRank(list).find(x => x.sid === sid); return r ? r.pl : 0 };
+
 /* ======================= STUDENT ======================= */
 const S = { code: null, sid: null, meta: {}, tMap: new Map(), mine: new Map(), marks: new Map(), bg: { type: 'grid', img: null }, unsubs: [], board: null, tool: null, seen: false, ready: false };
 function initStudentUI() {
@@ -3458,7 +3465,7 @@ function runRank() {
 }
 function rankHTML(list, me, off = 0) {
   if (!list.length) return '<div class="empty"><b>لا يوجد طلاب في الجلسة</b></div>';
-  return list.map((r, j) => { const i = j + off; return `<div class="lr rk-in${r.sid === me ? ' me' : ''}" style="animation-delay:${j * 60}ms"><span class="rk">${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span class="ln">${esc(r.n)}</span>${r.g ? `<span class="lc gain">+${r.g}</span>` : ''}<b class="lt">${r.t}</b></div>` }).join('');
+  return list.map((r, j) => { const i = r.pl ? r.pl - 1 : j + off; return `<div class="lr rk-in${r.sid === me ? ' me' : ''}" style="animation-delay:${j * 60}ms"><span class="rk">${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span><span class="ln">${esc(r.n)}</span>${r.g ? `<span class="lc gain">+${r.g}</span>` : ''}<b class="lt">${r.t}</b></div>` }).join('');
 }
 async function showRank() {
   const r = QZ.run; if (!r) return; r.phase = 'k'; renderRun();
@@ -3491,7 +3498,7 @@ function renderRun() {
   $('#rIdx').textContent = `${r.title ? r.title + ' · ' : ''}سؤال ${r.i + 1} من ${r.list.length}`;
   $('#rSkip').hidden = rev;
   $('#rCount').textContent = `${total} / ${N} أجابوا`;
-  if (rank) { $('#rRankT').textContent = `الترتيب بعد السؤال ${r.i + 1}`; $('#rRank').innerHTML = rankHTML(runRank(), null) }
+  if (rank) { $('#rRankT').textContent = `الترتيب بعد السؤال ${r.i + 1}`; const top5 = denseRank(runRank()).filter(x => x.pl <= 5 && x.t > 0); $('#rRank').innerHTML = (top5.length ? rankHTML(top5, null) : '<div class="empty"><b>لا توجد نقاط بعد</b></div>') + '<p class="rknote">🔒 يظهر هنا الخمسة الأوائل فقط، وكل طالب يرى ترتيبه على جهازه</p>' }
   $('#rOpts').classList.toggle('two', k === 'tf');
   $('#rOpts').innerHTML = KIND_OPTS(k).map(c => {
     const pct = total ? Math.round(cnt[c] / total * 100) : 0, cls = 'opt' + (rev ? (c === q.ans ? ' right' : ' dim') : '');
@@ -3500,12 +3507,12 @@ function renderRun() {
   $('#rWho').innerHTML = [...T.st.values()].map(s => {
     const a = A[s.sid], nm = esc(s.info.name);
     if (!a) return `<span class="ach none">${nm}</span>`;
-    if (!show) return `<span class="ach done">${nm} ✓</span>`;
+    return `<span class="ach done">${nm} ✓</span>`;
     const ok = a.c === q.ans, p = (T.qpts[s.sid] || {})[r.qid];
     return `<span class="ach ${rev ? (ok ? 'ok' : 'bad') : 'done'}">${nm} · ${optLabel(a.c, k)}${rev && ok && p != null ? ` · +${p}` : ''}</span>`;
   }).join('') || '<span class="ach none">لا يوجد طلاب في الجلسة</span>';
   { const st = [...T.st.values()].filter(s => s.info && s.info.name), dn = st.filter(s => A[s.sid]).sort((x, y) => (A[x.sid].at || 0) - (A[y.sid].at || 0)), nt = st.filter(s => !A[s.sid]);
-    $('#rDone').innerHTML = `<h4>✅ أجابوا <b>${dn.length}</b></h4>` + dn.map(s => { const a = A[s.sid], ok = a.c === q.ans; return `<span class="qn ${rev ? (ok ? 'ok' : 'bad') : ''}">${esc(s.info.name)}${show ? ` · ${optLabel(a.c, k)}` : ''}</span>` }).join('');
+    $('#rDone').innerHTML = `<h4>✅ أجابوا <b>${dn.length}</b></h4>` + dn.map(s => `<span class="qn">${esc(s.info.name)}</span>`).join('');
     $('#rNot').innerHTML = `<h4>⏳ لم يجيبوا <b>${nt.length}</b></h4>` + nt.map(s => `<span class="qn">${esc(s.info.name)}</span>`).join('');
     $('#rDone').hidden = $('#rNot').hidden = rank; }
   $('#rReveal').hidden = rev; $('#rNext').hidden = !rev; $('#rPeek').hidden = rev;
@@ -3820,11 +3827,12 @@ function renderLB(list, me) {
     pod.innerHTML = ''; mr.hidden = true;
     ul.innerHTML = `<div class="empty"><b>لا توجد نقاط بعد</b><span>كل علامة صح أو ختم «ممتاز» على السبورة = ${STAMP_PTS} نقطة، والإجابة الصحيحة في الكويز نقطتان لو كانت في أول ربع الوقت، ونقطة بعده.</span></div>`; return;
   }
-  const top = list.slice(0, 3);
-  pod.innerHTML = [1, 0, 2].filter(i => top[i]).map(i => { const r = top[i]; return `<div class="pd p${i + 1}${r.sid === me ? ' me' : ''}"><div class="pa">${esc((r.n.trim()[0]) || '؟')}</div><div class="pn">${esc(r.n)}</div><div class="pp">${r.t} نقطة</div><div class="pb">${i + 1}</div></div>` }).join('');
-  ul.innerHTML = list.map((r, i) => `<div class="lr${r.sid === me ? ' me' : ''}"><span class="rk">${i + 1}</span><span class="ln">${esc(r.n)}</span><span class="lc">السبورة ${r.b}</span><span class="lc">الكويز ${r.q}</span><b class="lt">${r.t}</b></div>`).join('');
-  const mi = me ? list.findIndex(r => r.sid === me) : -1;
-  mr.hidden = mi < 0; if (mi >= 0) mr.textContent = mi === 0 ? '🥇 أنت الأول! ما شاء الله عليك' : `ترتيبك ${mi + 1} من ${list.length} · استمر، أنت قريب من القمة`;
+  const dl = denseRank(list.filter(r => r.t > 0)), places = [1, 2, 3].map(pl => dl.filter(r => r.pl === pl));
+  pod.innerHTML = [1, 0, 2].filter(i => places[i].length).map(i => { const g = places[i], mine = g.some(r => r.sid === me);
+    return `<div class="pd p${i + 1}${mine ? ' me' : ''}"><div class="pa">${g.length > 1 ? '👥' : esc((g[0].n.trim()[0]) || '؟')}</div><div class="pn${g.length > 1 ? ' many' : ''}">${g.map(r => esc(r.n)).join('، ')}</div><div class="pp">${g[0].t} نقطة</div><div class="pb">${i + 1}</div></div>` }).join('');
+  ul.innerHTML = '';
+  const mp = me ? (dl.find(r => r.sid === me) || {}).pl || 0 : 0;
+  mr.hidden = !me; if (me) mr.textContent = mp === 1 ? '🥇 أنت في المركز الأول! ما شاء الله عليك' : mp && mp <= 3 ? `🎉 أنت في المركز ${mp}` : 'استمر، أنت قريب من القمة 💪';
 }
 function openTeacherLB() { $('#lbView').hidden = false; renderTeacherLB() }
 function renderTeacherLB() {
@@ -3869,8 +3877,8 @@ function stuQuiz(q) {
   $('#qsStage').hidden = $('#qsOpts').hidden = $('#qsMsg').hidden = $('#qsTime').hidden = rk; $('#qsRankW').hidden = !rk;
   if (rk) {
     const lb = q.lb || [], mi = lb.findIndex(x => x.sid === S.sid);
-    $('#qsRankT').textContent = mi < 0 ? 'الترتيب الآن' : mi === 0 ? '🥇 أنت في الصدارة! استمر' : `ترتيبك ${mi + 1} من ${lb.length} · السؤال الجاي فرصتك`;
-    $('#qsRank').innerHTML = rankHTML(lb.slice(0, 10), S.sid) + (mi >= 10 ? rankHTML([lb[mi]], S.sid, mi) : '');
+    const pl = mi < 0 ? 0 : placeOf(lb, S.sid); $('#qsRankT').textContent = mi < 0 ? 'الترتيب الآن' : pl === 1 ? '🥇 أنت في الصدارة! استمر' : `ترتيبك ${pl} · السؤال الجاي فرصتك`;
+    { const dl = denseRank(lb), t5 = dl.filter(x => x.pl <= 5 && x.t > 0); $('#qsRank').innerHTML = rankHTML(t5, S.sid) + (mi >= 0 && !t5.some(x => x.sid === S.sid) ? rankHTML([dl[mi]], S.sid) : '') }
     if (prevSt !== 'k' && mi === 0) SFX.chime();
     return;
   }
