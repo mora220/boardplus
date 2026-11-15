@@ -77,15 +77,17 @@ async function openAttendance() {
       <input type="date" class="inp" id="atA"><span>→</span><input type="date" class="inp" id="atB">
       <select class="inp" id="atC">${[...classes].map(([id, n]) => `<option value="${id}">👥 ${esc(n)}</option>`).join('')}${hasFree || !classes.size ? '<option value="free">✍️ دخول حر</option>' : ''}</select></div>
     <p class="muted" style="margin:0;font-size:12.5px">اضغط على خانة الطالب لتغييره بين حاضر وغائب · 🗑 فوق التاريخ لحذف الحصة</p>
-    <div class="attwrap" id="atT"></div>
+    <div id="atU"></div><div class="attwrap" id="atT"></div>
     <div class="row"><button class="btn" data-close>إغلاق</button><button class="btn" id="atX">⬇ تنزيل Excel</button><button class="btn pri" id="atP">🖨 طباعة</button></div>`, (v, close) => {
     v.querySelector('.dlg').classList.add('attdlg');
     const $v = q => v.querySelector(q);
-    const draw = () => { $v('#atA').value = iso(from); $v('#atB').value = iso(to); $v('#atC').value = cls; $v('#atT').innerHTML = table(build(), true) };
-    $v('#atT').onclick = async e => {
+    const draw = () => { $v('#atU').innerHTML = ATT.trash ? `<button class="btn" id="atUndo" type="button">↩ استرجاع آخر حصة محذوفة</button>` : ''; $v('#atA').value = iso(from); $v('#atB').value = iso(to); $v('#atC').value = cls; $v('#atT').innerHTML = table(build(), true) };
+    if (ATT.trash === undefined) { try { ATT.trash = JSON.parse(ls.get('rb_att_trash') || 'null') } catch (x) { ATT.trash = null } }
+    v.querySelector('.dlg').onclick = async e => {
       const del = e.target.closest('[data-del]'), td = e.target.closest('td[data-k]');
       if (del) { const r = recs.find(x => x.k === del.dataset.del); if (!r || !(await ask('حذف هذه الحصة من الكشف؟', `${fmtD(r.d)} ${fmtT(r.d)} · سيُحذف حضورها ومشاركتها`, 'حذف'))) return;
-        await DB.remove(`${BANK()}/att/${r.k}`); if (r.code === T.code) { ATT.skip = T.code } recs = recs.filter(x => x !== r); return draw() }
+        await DB.remove(`${BANK()}/att/${r.k}`); if (r.code === T.code) { ATT.skip = T.code } recs = recs.filter(x => x !== r); const { k, ...rec } = r; ATT.trash = { k, rec }; try { ls.set('rb_att_trash', JSON.stringify(ATT.trash)) } catch (x) {} return draw() }
+      if (e.target.closest('#atUndo')) { const t = ATT.trash; if (!t) return; await DB.set(`${BANK()}/att/${t.k}`, t.rec); if (t.rec.code === ATT.skip) ATT.skip = null; recs.push({ ...t.rec, k: t.k }); recs.sort((a, b) => a.d - b.d); ATT.trash = null; ls.set('rb_att_trash', ''); toast('رجعت الحصة إلى الكشف'); return draw() }
       if (!td) return; const r = recs.find(x => x.k === td.dataset.k), n = td.dataset.n; if (!r) return;
       const now = pres(r).get(n), m = { ...(r.man || {}) };
       if (now) { if (now.p && !(await ask('تغيير إلى غائب؟', `${n} · ستُحذف نقاطه في هذه الحصة (${now.p})`, 'غائب'))) return; m[n] = 0 } else m[n] = 1;

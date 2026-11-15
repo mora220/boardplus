@@ -20,6 +20,8 @@ CSS = r"""
 .clsi b{flex:1}
 .clsi small{color:var(--muted)}
 .clsi .btn{height:32px;padding:0 10px}
+.clsi.lk{opacity:.55;cursor:not-allowed}
+.clslock{margin:0;padding:8px 12px;border-radius:10px;background:#fff6dd;color:#7a5600;font-size:13px}
 """
 
 JS = r"""
@@ -30,22 +32,26 @@ function renderClsChip() {
   b.classList.toggle('on', !!c); $('#tClsName').textContent = c ? `👥 ${c.name || 'الفصل'}` : '✍️ دخول حر';
   b.title = c ? 'الطلاب يختارون أسماءهم من قائمة الفصل' : '✍️ دخول حر: الطالب يكتب اسمه';
 }
+const clsLocked = () => !!(T.st && T.st.size);       // once students are in, the lesson keeps its class (a new lesson for another class)
+const curCls = () => (T.clist && T.clist.id) || '';
 async function applyClass(id, all) {
-  if (!T.code) return;
+  if (!T.code) return; if (clsLocked() && (id || '') !== curCls()) return toast('لا يمكن تغيير الفصل بعد دخول الطلاب. ابدأ حصة جديدة للفصل الآخر', true);
   if (!id) { await DB.remove(`sessions/${T.code}/clist`); ls.set('rb_lastcls', 'free'); return toast('✍️ دخول حر: الطالب يكتب اسمه') }
   const c = all[id]; if (!c) return; await DB.set(`sessions/${T.code}/clist`, { id, name: c.name || 'الفصل', names: c.names || [] }); ls.set('rb_lastcls', id);
   toast(`👥 ${c.name || 'الفصل'}`);
 }
 async function openClasses(opts = {}) {
   if (!T.code) return; const all = await loadClasses(), ids = Object.keys(all).sort((a, b) => String(all[a].name).localeCompare(String(all[b].name), 'ar'));
-  let pick = opts.pick !== undefined ? opts.pick : (T.clist && T.clist.id && all[T.clist.id] ? T.clist.id : (T.clist ? '' : ''));
+  let pick = clsLocked() ? curCls() : opts.pick !== undefined ? opts.pick : (T.clist && T.clist.id && all[T.clist.id] ? T.clist.id : (T.clist ? '' : ''));
   if (opts.ask) { const last = ls.get('rb_lastcls'); pick = last && last !== 'free' && all[last] ? last : '' }
   modal(`<h3>👥 ${opts.ask ? 'لأي فصل هذه الحصة؟' : 'فصولي'}</h3>
+    ${clsLocked() && !opts.ask ? `<p class="clslock">🔒 فصل هذه الحصة ثابت بعد دخول الطلاب، حتى لا يختلط الحضور. لفصل آخر اضغط «حصة جديدة».</p>` : ''}
     <div class="clsl">${ids.map(id => `<label class="clsi ${pick === id ? 'on' : ''}" data-id="${id}"><input type="radio" name="cls" value="${id}" ${pick === id ? 'checked' : ''}><b>${esc(all[id].name || 'الفصل')}</b><small>${(all[id].names || []).length} طالب</small>
         <button class="btn" type="button" data-ed="${id}">✏️ تعديل</button><button class="btn" type="button" data-del="${id}" title="حذف">${svgI('trash')}</button></label>`).join('')}
       <label class="clsi ${!pick ? 'on' : ''}" data-id=""><input type="radio" name="cls" value="" ${!pick ? 'checked' : ''}><b>✍️ دخول حر: الطالب يكتب اسمه</b></label></div>
     <div class="row"><button class="btn" id="clsAdd">＋ إضافة فصل</button><span class="grow"></span><button class="btn" data-close>إلغاء</button><button class="btn pri" id="clsOk">تأكيد</button></div>`, (v, close) => {
-    v.querySelectorAll('.clsi').forEach(l => l.onclick = e => { if (e.target.closest('[data-ed],[data-del]')) return; pick = l.dataset.id; v.querySelectorAll('.clsi').forEach(x => { x.classList.toggle('on', x === l); x.querySelector('input').checked = x === l }) });
+    v.querySelectorAll('.clsi').forEach(l => l.onclick = e => { if (e.target.closest('[data-ed],[data-del]')) return; if (clsLocked() && l.dataset.id !== curCls()) { e.preventDefault(); return toast('لا يمكن تغيير الفصل بعد دخول الطلاب. ابدأ حصة جديدة للفصل الآخر', true) } pick = l.dataset.id; v.querySelectorAll('.clsi').forEach(x => { x.classList.toggle('on', x === l); x.querySelector('input').checked = x === l }) });
+    if (clsLocked()) v.querySelectorAll('.clsi').forEach(l => { if (l.dataset.id !== curCls()) { l.classList.add('lk'); l.querySelector('input').disabled = true } });
     v.querySelectorAll('[data-ed]').forEach(b => b.onclick = e => { e.preventDefault(); close(); editClass(b.dataset.ed, all[b.dataset.ed]) });
     v.querySelectorAll('[data-del]').forEach(b => b.onclick = async e => { e.preventDefault(); const id = b.dataset.del; close(); if (await ask('حذف الفصل؟', all[id].name || '', 'حذف')) { await DB.remove(`${BANK()}/classes/${id}`); if (T.clist && T.clist.id === id) await DB.remove(`sessions/${T.code}/clist`) } openClasses() });
     v.querySelector('#clsAdd').onclick = () => { close(); editClass(null) };
