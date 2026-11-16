@@ -876,6 +876,11 @@ body.watching #tNew{opacity:.35;pointer-events:none}
 .tghi .tm.r{background:#e63946}.tghi .tm.b{background:#2f6fe0}.tghi .tm.x{background:rgba(255,255,255,.15);font-size:22px}
 @media (max-width:560px){.tgp .rgn{display:none}.race.tg-r .rtop .pill2:last-child,.race.tg-b .rtop .pill2:last-child{display:none}}
 .race .center .tgres{font:900 clamp(30px,7vw,46px)/1.15 var(--f-display);margin:0}
+#qzBuild.hideans .abcd button.on{background:var(--surface-2);border-color:var(--line);color:inherit}
+#qzBuild.hideans .qa>span{visibility:hidden}
+#qAns.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.lbinfo{text-align:center;font-weight:700;font-size:20px;color:var(--muted);margin:2px 0 6px}
+.lbinfo b{color:var(--ink)}
 .selbox{position:absolute;z-index:3;border:2px dashed var(--red);background:rgba(224,36,47,.08);border-radius:4px;pointer-events:none}
 /* quiz */
 .qz{position:fixed;inset:0;z-index:30;background:var(--wall);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
@@ -1131,12 +1136,13 @@ button.opt:disabled{cursor:default}
 </section>
 
 <!-- ================= QUIZ ================= -->
-<section class="qz" id="qzBuild" hidden>
+<section class="qz hideans" id="qzBuild" hidden>
   <header class="top gut">
     <button class="btn icon" id="qClose" aria-label="إغلاق" title="إغلاق"><svg class="ico"><use href="#i-x"/></svg></button>
     <h3 class="qz-t"><svg class="ico"><use href="#i-quiz"/></svg>إعداد الكويز</h3>
     <div class="grow"></div>
     <label class="lim" title="الوقت الافتراضي للأسئلة الجديدة"><span class="hide-sm">الوقت الافتراضي</span><input class="inp limin" id="qLimDef" type="number" min="5" max="600" step="5"><span>ث</span></label>
+    <button class="btn" id="qAns" type="button" title="الإجابات الصحيحة مخفية حتى لا تظهر في مشاركة الشاشة">👁 <span>إظهار الإجابات</span></button>
     <button class="btn aibtn" id="qAI"><svg class="ico"><use href="#i-ai"/></svg><span>أسئلة بالذكاء الاصطناعي</span></button>
     <button class="btn" id="qPaste"><svg class="ico"><use href="#i-paste"/></svg><span class="hide-sm">لصق صورة</span></button>
     <button class="btn" id="qUpload"><svg class="ico"><use href="#i-img"/></svg><span class="hide-sm">رفع صور</span></button>
@@ -1207,7 +1213,7 @@ button.opt:disabled{cursor:default}
     <button class="btn pri" id="lbShow">اعرضها للطلاب</button>
     <button class="btn icon" id="lbClose" aria-label="إغلاق" title="إغلاق"><svg class="ico"><use href="#i-x"/></svg></button>
   </header>
-  <div class="qz-body gut"><div class="myrank" id="lbMe" hidden></div><div class="podium" id="lbPod"></div><div class="lbl" id="lbList"></div></div>
+  <div class="qz-body gut"><div class="lbinfo" id="lbInfo"></div><div class="myrank" id="lbMe" hidden></div><div class="podium" id="lbPod"></div><div class="lbl" id="lbList"></div></div>
 </section>
 
 <section class="gameov" id="gameOv" hidden>
@@ -3412,6 +3418,17 @@ function tugResult(sq) {
   return `<p class="tgres">💪 فاز ${TEAMS[w].n} هالمرة</p><p>المرة الجاية فريقك يشدّ أقوى!</p>`;
 }
 
+/* ======================= hide the answers while the screen is shared ======================= */
+function setAnsView(show) {
+  QZ.showAns = !!show; $('#qzBuild').classList.toggle('hideans', !QZ.showAns);
+  const b = $('#qAns'); b.classList.toggle('on', QZ.showAns); b.querySelector('span').textContent = QZ.showAns ? 'إخفاء الإجابات' : 'إظهار الإجابات'; b.firstChild.textContent = QZ.showAns ? '🙈 ' : '👁 ';
+}
+function lbInfoText() {
+  const d = new Intl.DateTimeFormat(EN ? 'en-GB' : 'ar-SA-u-ca-gregory-nu-latn', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+  const cls = ROLE === 't' && T.clist && T.clist.name ? `<b>👥 ${esc(T.clist.name)}</b> · ` : '';
+  return `${cls}📅 ${d}`;
+}
+
 /* ======================= STUDENT ======================= */
 const S = { code: null, sid: null, meta: {}, tMap: new Map(), mine: new Map(), marks: new Map(), bg: { type: 'grid', img: null }, unsubs: [], board: null, tool: null, seen: false, ready: false };
 function initStudentUI() {
@@ -4108,6 +4125,7 @@ function renderBank() {
     <label class="qmove">نقل إلى<select data-move aria-label="نقل السؤال لمجموعة">${opts.replace(`value="${setOf(q)}"`, `value="${setOf(q)}" selected`)}</select></label>
   </div>` }).join('');
 }
+document.addEventListener('click', e => { const b = e.target.closest('#qAns'); if (b) setAnsView(!QZ.showAns); const a = e.target.closest('#qzBuild.hideans .abcd [data-set]'); if (a) setTimeout(() => toast('✓ حُفظت الإجابة (مخفية)'), 50) });
 function startQuiz(only) {
   if (QZ.run) return toast('فيه كويز شغال الآن', true);
   let src = Array.isArray(only) ? only : null, title = '';
@@ -4526,7 +4544,7 @@ function computeLB() {
     .sort((a, b) => b.t - a.t || b.q - a.q || a.n.localeCompare(b.n, 'ar'));
 }
 function renderLB(list, me) {
-  const pod = $('#lbPod'), ul = $('#lbList'), mr = $('#lbMe');
+  const pod = $('#lbPod'), ul = $('#lbList'), mr = $('#lbMe'); $('#lbInfo').innerHTML = lbInfoText();
   if (!list.length || !list.some(r => r.t > 0)) {
     pod.innerHTML = ''; mr.hidden = true;
     ul.innerHTML = `<div class="empty"><b>لا توجد نقاط بعد</b><span>كل علامة صح أو ختم «ممتاز» على السبورة = ${STAMP_PTS} نقطة، والإجابة الصحيحة في الكويز نقطتان لو كانت في أول ربع الوقت، ونقطة بعده.</span></div>`; return;
@@ -4536,7 +4554,8 @@ function renderLB(list, me) {
     return `<div class="pd p${i + 1}${mine ? ' me' : ''}"><div class="pa">${g.length > 1 ? '👥' : esc((g[0].n.trim()[0]) || '؟')}</div><div class="pn${g.length > 1 ? ' many' : ''}">${g.map(r => esc(r.n)).join('، ')}</div><div class="pp">${g[0].t} نقطة</div><div class="pb">${i + 1}</div></div>` }).join('');
   ul.innerHTML = '';
   const mp = me ? (dl.find(r => r.sid === me) || {}).pl || 0 : 0;
-  mr.hidden = !me; if (me) mr.textContent = mp === 1 ? '🥇 أنت في المركز الأول! ما شاء الله عليك' : mp && mp <= 3 ? `🎉 أنت في المركز ${mp}` : 'استمر، أنت قريب من القمة 💪';
+  const all = list.length, my = mp || (new Set(dl.map(r => r.t)).size + 1);
+  mr.hidden = !me; if (me) mr.textContent = my === 1 ? `🥇 أنت في المركز الأول من ${all}! ما شاء الله عليك` : my <= 3 ? `🎉 ترتيبك ${my} من ${all}` : `ترتيبك ${my} من ${all} · استمر، أنت قريب من القمة 💪`;
 }
 function openTeacherLB() { $('#lbView').hidden = false; renderTeacherLB() }
 function renderTeacherLB() {
