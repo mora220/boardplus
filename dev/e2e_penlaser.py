@@ -23,8 +23,9 @@ async def main():
     if RB: await s.evaluate("c=>{localStorage.removeItem('rb_sid_'+c)}", code)
     await s.fill('#jCode', code); await s.wait_for_timeout(900); await s.fill('#jName', 'سارة'); await s.click('#jGo'); await s.wait_for_timeout(1200)
     await t.bring_to_front()
-    print('size buttons in teacher bar:', await t.locator('#tTools .szg .sz').count(), '| focus bar:', await t.locator('#fTools .szg .sz').count())
-    await t.click('#tTools .szg [data-w="20"]'); print('tool w:', await t.evaluate('tTool.get().w'))
+    print('size icon in teacher bar:', await t.locator('#tTools .szbtn').count(), '| focus bar:', await t.locator('#fTools .szbtn').count(), '| pop hidden:', await t.locator('#tTools .szpop').is_hidden())
+    await t.click('#tTools .szbtn'); await t.wait_for_timeout(200); await t.screenshot(path=SP + ('rb_' if RB else '') + 'szpop.png')
+    await t.click('#tTools .szpop [data-w="20"]'); print('tool w:', await t.evaluate('tTool.get().w'), '| pop closed:', await t.locator('#tTools .szpop').is_hidden())
     # laser
     await t.click('#tTools [data-t="laser"]')
     bb = await t.locator('#tBoard').bounding_box()
@@ -39,8 +40,8 @@ async def main():
     # quiz pen sizes
     img = await t.evaluate("()=>{const c=document.createElement('canvas');c.width=800;c.height=450;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,800,450);return c.toDataURL('image/png')}")
     await t.evaluate("img=>startQuiz([{id:'q1',img,ans:'B',kind:'mc',lim:60}])", img); await t.wait_for_timeout(1500)
-    print('quiz size buttons:', await t.locator('#rInk [data-iw]').count())
-    await t.click('#rInk [data-iw="3"]'); await t.mouse.move(400, 400); await t.mouse.down(); await t.mouse.move(600, 420, steps=8); await t.mouse.up()
+    await t.click('#rInk .iszb'); await t.wait_for_timeout(200); await t.screenshot(path=SP + ('rb_' if RB else '') + 'qszpop.png')
+    await t.click('#rInk [data-iw="3"]'); print('quiz pop closed:', await t.locator('#rInk .szpop').is_hidden()); await t.mouse.move(400, 400); await t.mouse.down(); await t.mouse.move(600, 420, steps=8); await t.mouse.up()
     print('quiz stroke w:', await t.evaluate('[...QI.map.values()].map(x=>x.w)'))
     await t.screenshot(path=SP + ('rb_' if RB else '') + 'qsize.png')
     print('errors:', errs[:6]); await b.close()

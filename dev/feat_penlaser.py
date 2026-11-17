@@ -5,10 +5,16 @@
     The teacher sends the points in small batches (sessions/<code>/laser = {s, p:[x,y,...], t}); students draw the same trail."""
 
 CSS = r"""
-.tb .szg{display:inline-flex;align-items:center;gap:1px}
-.tb .szg .sz{width:30px;min-width:30px;padding:0}
-.tb .szg .sz i{margin:auto}
-#rInk .isz{width:30px;min-width:30px;padding:0}
+.szwrap{position:relative;display:inline-flex}
+.szbtn .szi,#rInk .iszb .szi{display:grid;place-items:center;width:24px;height:24px}
+.szbtn .szi i,#rInk .iszb .szi i{display:block;border-radius:50%;background:currentColor}
+.szpop{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);z-index:8;display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px;box-shadow:var(--shadow);white-space:nowrap}
+.szpop[hidden]{display:none}
+.szpop .sz{width:34px;min-width:34px;padding:0}.szpop .sz i{margin:auto}
+.szpop button[title]:hover::after{display:none}
+#rInk .iszw{position:relative;display:inline-flex}
+#rInk .iszw .szpop{bottom:auto;top:calc(100% + 8px);z-index:30}
+#rInk .isz{width:34px;min-width:34px;padding:0}
 #rInk .isz i{display:block;margin:auto;border-radius:50%;background:currentColor}
 .lzc{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6}
 .laz{width:12px!important;height:12px!important;margin:-6px 0 0 -6px!important;background:radial-gradient(circle,#fff 0 24%,#ff2d3d 42%,rgba(255,45,61,.35) 70%,transparent 76%)!important;box-shadow:0 0 8px 3px rgba(255,45,61,.5)!important;z-index:7!important}
@@ -41,7 +47,9 @@ function lzDraw(host, o) {
 function lzFlush() { clearTimeout(LZ2.ft); if (LZ2.buf.length && T.code) { DB.set(`sessions/${T.code}/laser`, { s: LZ2.sid, p: LZ2.buf, t: DB.now() }); LZ2.buf = []; LZ.t = performance.now() } }
 """
 
-QBTNS = ''.join(f'<button data-iw="{k}" class="isz" title="{n}"><i style="width:{d}px;height:{d}px"></i></button>' for k, d, n in [(0.6, 4, 'رفيع'), (1, 7, 'متوسط'), (1.8, 10, 'عريض'), (3, 14, 'عريض جدًا')])
+QBTNS = ('<span class="iszw"><button data-iszb class="iszb" title="سُمك القلم"><span class="szi"><i></i></span></button><span class="szpop" hidden>'
+         + ''.join(f'<button data-iw="{k}" class="isz" title="{n}"><i style="width:{d}px;height:{d}px"></i></button>' for k, d, n in [(0.6, 4, 'رفيع'), (1, 7, 'متوسط'), (1.8, 10, 'عريض'), (3, 14, 'عريض جدًا')])
+         + '</span></span>')
 
 
 def apply(s, rep, target):
@@ -51,13 +59,21 @@ def apply(s, rep, target):
     s = rep(s, "    + '<span class=\"sep\"></span>' + [3, 6, 12].map(w => `<button data-w=\"${w}\" class=\"sz\" title=\"سُمك\" aria-label=\"سمك ${w}\"><i style=\"width:${4 + w * .9}px;height:${4 + w * .9}px\"></i></button>`).join('');",
             ";")
     s = rep(s, "<span class=\"palpop\" hidden>${pal}</span></span>`;",
-            "<span class=\"palpop\" hidden>${pal}</span></span><span class=\"szg\">${[3, 6, 12, 20].map(w => `<button data-w=\"${w}\" class=\"sz\" title=\"سُمك القلم\" aria-label=\"سمك ${w}\"><i style=\"width:${3 + w * .55}px;height:${3 + w * .55}px\"></i></button>`).join('')}</span>`;")
+            "<span class=\"palpop\" hidden>${pal}</span></span><span class=\"szwrap\"><button data-szb class=\"szbtn\" title=\"سُمك القلم\" aria-label=\"سُمك القلم\"><span class=\"szi\"><i></i></span></button><span class=\"szpop\" hidden>${[3, 6, 12, 20].map(w => `<button data-w=\"${w}\" class=\"sz\" title=\"سُمك القلم\" aria-label=\"سمك ${w}\"><i style=\"width:${3 + w * .55}px;height:${3 + w * .55}px\"></i></button>`).join('')}</span></span>`;")
+    s = rep(s, "    if (b.dataset.pal !== undefined) { pop().hidden = !pop().hidden; return }",
+            "    if (b.dataset.szb !== undefined) { const q = el.querySelector('.szpop'); q.hidden = !q.hidden; pop().hidden = true; return }\n    if (b.dataset.pal !== undefined) { pop().hidden = !pop().hidden; el.querySelector('.szpop').hidden = true; return }")
+    s = rep(s, "    if (b.dataset.c || b.dataset.w) pop().hidden = true;", "    if (b.dataset.c || b.dataset.w) { pop().hidden = true; el.querySelector('.szpop').hidden = true }")
+    s = rep(s, "  document.addEventListener('pointerdown', e => { const w = el.querySelector('.palwrap'); if (w && !w.contains(e.target)) pop().hidden = true });",
+            "  document.addEventListener('pointerdown', e => { const w = el.querySelector('.palwrap'); if (w && !w.contains(e.target)) pop().hidden = true; const z = el.querySelector('.szwrap'); if (z && !z.contains(e.target)) z.querySelector('.szpop').hidden = true });")
+    s = rep(s, "    const pb = el.querySelector('.palbtn .sw');", "    { const zi = el.querySelector('.szbtn .szi i'); if (zi) { const d = 3 + st.w * .55; zi.style.cssText = `width:${d}px;height:${d}px` } }\n    const pb = el.querySelector('.palbtn .sw');")
     # quiz pen bar: sizes
     s = rep(s, '<i class="isep"></i><button data-ink="full"', '<i class="isep"></i>' + QBTNS + '<i class="isep"></i><button data-ink="full"')
     s = rep(s, "const QI = { t: 'pen',", "const QI = { k: +(ls.get('rb_qk') || 1) || 1, t: 'pen',")
     s = rep(s, "function qInkTool(full) {", "function qInkTool(full) { const r = qInkTool0(full); r.w = Math.max(1, Math.round(r.w * (QI.k || 1) * 10) / 10); return r }\nfunction qInkTool0(full) {")
     s = rep(s, "(b.dataset.ink === 'full' && QI.full)));", "(b.dataset.ink === 'full' && QI.full) || (!!b.dataset.iw && +b.dataset.iw === QI.k)));")
-    s = rep(s, "    if (b.dataset.ic) { QZ.inkC = b.dataset.ic;", "    if (b.dataset.iw) { QI.k = +b.dataset.iw; ls.set('rb_qk', QI.k); if (QI.t === 'er') QI.t = 'pen'; setInk(true); return }\n    if (b.dataset.ic) { QZ.inkC = b.dataset.ic;")
+    s = rep(s, "    if (b.dataset.ic) { QZ.inkC = b.dataset.ic;", "    if (b.dataset.iszb !== undefined) { const q = b.parentElement.querySelector('.szpop'); q.hidden = !q.hidden; return }\n    if (b.dataset.iw) { QI.k = +b.dataset.iw; ls.set('rb_qk', QI.k); b.closest('.szpop').hidden = true; if (QI.t === 'er') QI.t = 'pen'; setInk(true); return }\n    if (b.dataset.ic) { QZ.inkC = b.dataset.ic;")
+    s = rep(s, "function qOverSize() {", "function qSzIcon() { const i = document.querySelector('#rInk .iszb .szi i'); if (i) { const d = 3 + 4 * (QI.k || 1) * .9; i.style.cssText = `width:${d}px;height:${d}px` } }\nfunction qOverSize() {")
+    s = rep(s, "  QZ.inkOn = on; QZ.board.locked = !on || QI.full;", "  QZ.inkOn = on; qSzIcon(); QZ.board.locked = !on || QI.full;")
     # laser: a new trail on each press, batched sends
     s = rep(s, "this.laz = true; this.onLaser && this.onLaser(x, y); return }", "this.laz = true; this.onLaser && this.onLaser(x, y, true); return }")
     s = rep(s, """function sendLaser(x, y) {

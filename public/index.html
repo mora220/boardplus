@@ -887,10 +887,16 @@ body.watching #tNew{opacity:.35;pointer-events:none}
 #qAns.on{background:var(--ok);border-color:var(--ok);color:#fff}
 .lbinfo{text-align:center;font-weight:700;font-size:20px;color:var(--muted);margin:2px 0 6px}
 .lbinfo b{color:var(--ink)}
-.tb .szg{display:inline-flex;align-items:center;gap:1px}
-.tb .szg .sz{width:30px;min-width:30px;padding:0}
-.tb .szg .sz i{margin:auto}
-#rInk .isz{width:30px;min-width:30px;padding:0}
+.szwrap{position:relative;display:inline-flex}
+.szbtn .szi,#rInk .iszb .szi{display:grid;place-items:center;width:24px;height:24px}
+.szbtn .szi i,#rInk .iszb .szi i{display:block;border-radius:50%;background:currentColor}
+.szpop{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);z-index:8;display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px;box-shadow:var(--shadow);white-space:nowrap}
+.szpop[hidden]{display:none}
+.szpop .sz{width:34px;min-width:34px;padding:0}.szpop .sz i{margin:auto}
+.szpop button[title]:hover::after{display:none}
+#rInk .iszw{position:relative;display:inline-flex}
+#rInk .iszw .szpop{bottom:auto;top:calc(100% + 8px);z-index:30}
+#rInk .isz{width:34px;min-width:34px;padding:0}
 #rInk .isz i{display:block;margin:auto;border-radius:50%;background:currentColor}
 .lzc{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6}
 .laz{width:12px!important;height:12px!important;margin:-6px 0 0 -6px!important;background:radial-gradient(circle,#fff 0 24%,#ff2d3d 42%,rgba(255,45,61,.35) 70%,transparent 76%)!important;box-shadow:0 0 8px 3px rgba(255,45,61,.5)!important;z-index:7!important}
@@ -1192,7 +1198,7 @@ button.opt:disabled{cursor:default}
     <button class="btn" id="rEnd">إنهاء الكويز</button>
   </header>
   <div class="qz-body gut">
-    <div class="inkbar" id="rInk"><button data-it="pen" title="قلم"><svg class="ico"><use href="#i-pen"/></svg></button><button data-it="cal" title="قلم الخط العربي"><svg class="ico"><use href="#i-cal"/></svg></button><button data-it="er" title="ممسحة"><svg class="ico"><use href="#i-er"/></svg></button><i class="isep"></i><button data-ic="#e0242f" title="أحمر"><span class="sw" style="background:#e0242f"></span></button><button data-ic="#2f5bd3" title="أزرق"><span class="sw" style="background:#2f5bd3"></span></button><button data-ic="#1f9d55" title="أخضر"><span class="sw" style="background:#1f9d55"></span></button><button data-ic="#15213a" title="أسود"><span class="sw" style="background:#15213a"></span></button><i class="isep"></i><button data-iw="0.6" class="isz" title="رفيع"><i style="width:4px;height:4px"></i></button><button data-iw="1" class="isz" title="متوسط"><i style="width:7px;height:7px"></i></button><button data-iw="1.8" class="isz" title="عريض"><i style="width:10px;height:10px"></i></button><button data-iw="3" class="isz" title="عريض جدًا"><i style="width:14px;height:14px"></i></button><i class="isep"></i><button data-ink="full" class="wide" title="مكان الكتابة: الشاشة كلها (تظهر في مشاركة الشاشة) أو السؤال فقط (يظهر على أجهزة الطلاب)"><span class="fl1">🖥 الشاشة كلها</span><span class="fl0">📱 على السؤال</span></button><i class="isep"></i><button data-ink="undo" title="تراجع"><svg class="ico"><use href="#i-undo"/></svg></button><button data-ink="clear" title="مسح الكتابة"><svg class="ico"><use href="#i-trash"/></svg></button></div>
+    <div class="inkbar" id="rInk"><button data-it="pen" title="قلم"><svg class="ico"><use href="#i-pen"/></svg></button><button data-it="cal" title="قلم الخط العربي"><svg class="ico"><use href="#i-cal"/></svg></button><button data-it="er" title="ممسحة"><svg class="ico"><use href="#i-er"/></svg></button><i class="isep"></i><button data-ic="#e0242f" title="أحمر"><span class="sw" style="background:#e0242f"></span></button><button data-ic="#2f5bd3" title="أزرق"><span class="sw" style="background:#2f5bd3"></span></button><button data-ic="#1f9d55" title="أخضر"><span class="sw" style="background:#1f9d55"></span></button><button data-ic="#15213a" title="أسود"><span class="sw" style="background:#15213a"></span></button><i class="isep"></i><span class="iszw"><button data-iszb class="iszb" title="سُمك القلم"><span class="szi"><i></i></span></button><span class="szpop" hidden><button data-iw="0.6" class="isz" title="رفيع"><i style="width:4px;height:4px"></i></button><button data-iw="1" class="isz" title="متوسط"><i style="width:7px;height:7px"></i></button><button data-iw="1.8" class="isz" title="عريض"><i style="width:10px;height:10px"></i></button><button data-iw="3" class="isz" title="عريض جدًا"><i style="width:14px;height:14px"></i></button></span></span><i class="isep"></i><button data-ink="full" class="wide" title="مكان الكتابة: الشاشة كلها (تظهر في مشاركة الشاشة) أو السؤال فقط (يظهر على أجهزة الطلاب)"><span class="fl1">🖥 الشاشة كلها</span><span class="fl0">📱 على السؤال</span></button><i class="isep"></i><button data-ink="undo" title="تراجع"><svg class="ico"><use href="#i-undo"/></svg></button><button data-ink="clear" title="مسح الكتابة"><svg class="ico"><use href="#i-trash"/></svg></button></div>
     <canvas id="rOver"></canvas>
     <div class="stage qstage" id="rStage"><div id="rBoard"></div>
     </div>
@@ -1729,7 +1735,7 @@ function makeToolbar(el, { tools, colors, stamps, extras = [], lead = [] }) {
     .map(([k, g, n, c]) => `<button data-st="${k}" title="${n}" aria-label="${n}"><span class="stp${k === 'great' ? ' w' : ''}" style="${c}">${g}</span></button>`).join('');
   const pal = colors.map(c => `<button data-c="${c}" title="لون" aria-label="لون"><span class="sw" style="background:${c}"></span></button>`).join('')
 ;
-  h += `<span class="sep"></span><span class="palwrap"><button data-pal class="palbtn" title="اللون والسُّمك" aria-label="اللون والسُّمك"><span class="sw"><i></i></span></button><span class="palpop" hidden>${pal}</span></span><span class="szg">${[3, 6, 12, 20].map(w => `<button data-w="${w}" class="sz" title="سُمك القلم" aria-label="سمك ${w}"><i style="width:${3 + w * .55}px;height:${3 + w * .55}px"></i></button>`).join('')}</span>`;
+  h += `<span class="sep"></span><span class="palwrap"><button data-pal class="palbtn" title="اللون والسُّمك" aria-label="اللون والسُّمك"><span class="sw"><i></i></span></button><span class="palpop" hidden>${pal}</span></span><span class="szwrap"><button data-szb class="szbtn" title="سُمك القلم" aria-label="سُمك القلم"><span class="szi"><i></i></span></button><span class="szpop" hidden>${[3, 6, 12, 20].map(w => `<button data-w="${w}" class="sz" title="سُمك القلم" aria-label="سمك ${w}"><i style="width:${3 + w * .55}px;height:${3 + w * .55}px"></i></button>`).join('')}</span></span>`;
   if (lead.length) h = lead.map((x, i) => `<button data-ld="${i}" title="${x.label}" aria-label="${x.label}">${svgI(x.icon)}</button>`).join('') + '<span class="sep"></span>' + h;
   if (extras.length) h += '<span class="sep"></span>' + extras.map((x, i) => `<button data-x="${i}" title="${x.label}" aria-label="${x.label}"${x.color ? ` style="color:${x.color}"` : ''}>${svgI(x.icon)}</button>`).join('');
   el.innerHTML = h;
@@ -1739,14 +1745,16 @@ function makeToolbar(el, { tools, colors, stamps, extras = [], lead = [] }) {
     el.querySelectorAll('[data-c]').forEach(b => b.classList.toggle('on', st.c === b.dataset.c));
     el.querySelectorAll('[data-w]').forEach(b => b.classList.toggle('on', st.w === +b.dataset.w));
     const tz = el.querySelector('.tsz'); if (tz) { tz.hidden = st.t !== 'text'; tz.querySelector('.zv').textContent = st.z }
+    { const zi = el.querySelector('.szbtn .szi i'); if (zi) { const d = 3 + st.w * .55; zi.style.cssText = `width:${d}px;height:${d}px` } }
     const pb = el.querySelector('.palbtn .sw'); if (pb) { pb.style.background = st.c; const d = 3 + st.w * .8; pb.firstElementChild.style.cssText = `width:${d}px;height:${d}px` }
   };
   const pop = () => el.querySelector('.palpop');
-  document.addEventListener('pointerdown', e => { const w = el.querySelector('.palwrap'); if (w && !w.contains(e.target)) pop().hidden = true });
+  document.addEventListener('pointerdown', e => { const w = el.querySelector('.palwrap'); if (w && !w.contains(e.target)) pop().hidden = true; const z = el.querySelector('.szwrap'); if (z && !z.contains(e.target)) z.querySelector('.szpop').hidden = true });
   el.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.pal !== undefined) { pop().hidden = !pop().hidden; return }
-    if (b.dataset.c || b.dataset.w) pop().hidden = true;
+    if (b.dataset.szb !== undefined) { const q = el.querySelector('.szpop'); q.hidden = !q.hidden; pop().hidden = true; return }
+    if (b.dataset.pal !== undefined) { pop().hidden = !pop().hidden; el.querySelector('.szpop').hidden = true; return }
+    if (b.dataset.c || b.dataset.w) { pop().hidden = true; el.querySelector('.szpop').hidden = true }
     if (b.dataset.t) st.t = b.dataset.t;
     else if (b.dataset.st) { st.t = 'stamp'; st.k = b.dataset.st }
     else if (b.dataset.c) { st.c = b.dataset.c; if (st.t === 'er' || st.t === 'stamp' || st.t === 'cut' || st.t === 'lasso') st.t = 'pen' }
@@ -3009,10 +3017,11 @@ const QI = { k: +(ls.get('rb_qk') || 1) || 1, t: 'pen', full: ls.get('rb_qfull')
 function qInkTool(full) { const r = qInkTool0(full); r.w = Math.max(1, Math.round(r.w * (QI.k || 1) * 10) / 10); return r }
 function qInkTool0(full) { return { t: QI.t, c: QZ.inkC, w: QI.t === 'er' ? 7 : full ? (QI.t === 'cal' ? 4 : 4) : (QI.t === 'cal' ? 5 : 6) } }
 function setInk(on) {
-  QZ.inkOn = on; QZ.board.locked = !on || QI.full; $('#rBoard').classList.toggle('inkon', on && !QI.full);
+  QZ.inkOn = on; qSzIcon(); QZ.board.locked = !on || QI.full; $('#rBoard').classList.toggle('inkon', on && !QI.full);
   $('#rOver').classList.toggle('on', on && QI.full); if (on && QI.full) qOverSize();
   $('#rInk').querySelectorAll('button').forEach(b => b.classList.toggle('on', (on && b.dataset.it === QI.t) || (on && QI.t !== 'er' && b.dataset.ic === QZ.inkC) || (b.dataset.ink === 'full' && QI.full) || (!!b.dataset.iw && +b.dataset.iw === QI.k)));
 }
+function qSzIcon() { const i = document.querySelector('#rInk .iszb .szi i'); if (i) { const d = 3 + 4 * (QI.k || 1) * .9; i.style.cssText = `width:${d}px;height:${d}px` } }
 function qOverSize() { const c = $('#rOver'), r = c.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2), w = Math.round(r.width * d), h = Math.round(r.height * d); if (w && (c.width !== w || c.height !== h)) { c.width = w; c.height = h } qOverDraw() }
 function qOverDraw() { const c = $('#rOver'), x = c.getContext('2d'), d = c.width / Math.max(1, c.getBoundingClientRect().width); x.clearRect(0, 0, c.width, c.height); QI.map.forEach(s => drawStroke(x, s, d)) }
 function qInkInit() {
@@ -3022,7 +3031,8 @@ function qInkInit() {
   ['pointerup', 'pointercancel'].forEach(t => ov.addEventListener(t, () => { if (QI.cur) { QI.hist.push(QI.cur.id); QI.cur = null } }));
   $('#rInk').onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.iw) { QI.k = +b.dataset.iw; ls.set('rb_qk', QI.k); if (QI.t === 'er') QI.t = 'pen'; setInk(true); return }
+    if (b.dataset.iszb !== undefined) { const q = b.parentElement.querySelector('.szpop'); q.hidden = !q.hidden; return }
+    if (b.dataset.iw) { QI.k = +b.dataset.iw; ls.set('rb_qk', QI.k); b.closest('.szpop').hidden = true; if (QI.t === 'er') QI.t = 'pen'; setInk(true); return }
     if (b.dataset.ic) { QZ.inkC = b.dataset.ic; if (QI.t === 'er') QI.t = 'pen'; setInk(true) }
     else if (b.dataset.it) { if (QZ.inkOn && QI.t === b.dataset.it) setInk(false); else { QI.t = b.dataset.it; setInk(true) } }
     else if (b.dataset.ink === 'full') { QI.full = !QI.full; ls.set('rb_qfull', QI.full ? '1' : '0'); setInk(QZ.inkOn); toast(QI.full ? '🖥 الكتابة على الشاشة كلها، تظهر في مشاركة الشاشة' : '📱 الكتابة على السؤال، وتظهر على أجهزة الطلاب') }
