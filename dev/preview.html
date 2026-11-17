@@ -881,6 +881,13 @@ body.watching #tNew{opacity:.35;pointer-events:none}
 #qAns.on{background:var(--ok);border-color:var(--ok);color:#fff}
 .lbinfo{text-align:center;font-weight:700;font-size:20px;color:var(--muted);margin:2px 0 6px}
 .lbinfo b{color:var(--ink)}
+.tb .szg{display:inline-flex;align-items:center;gap:1px}
+.tb .szg .sz{width:30px;min-width:30px;padding:0}
+.tb .szg .sz i{margin:auto}
+#rInk .isz{width:30px;min-width:30px;padding:0}
+#rInk .isz i{display:block;margin:auto;border-radius:50%;background:currentColor}
+.lzc{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6}
+.laz{width:12px!important;height:12px!important;margin:-6px 0 0 -6px!important;background:radial-gradient(circle,#fff 0 24%,#ff2d3d 42%,rgba(255,45,61,.35) 70%,transparent 76%)!important;box-shadow:0 0 8px 3px rgba(255,45,61,.5)!important;z-index:7!important}
 .selbox{position:absolute;z-index:3;border:2px dashed var(--red);background:rgba(224,36,47,.08);border-radius:4px;pointer-events:none}
 /* quiz */
 .qz{position:fixed;inset:0;z-index:30;background:var(--wall);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
@@ -1176,7 +1183,7 @@ button.opt:disabled{cursor:default}
     <button class="btn" id="rEnd">إنهاء الكويز</button>
   </header>
   <div class="qz-body gut">
-    <div class="inkbar" id="rInk"><button data-it="pen" title="قلم"><svg class="ico"><use href="#i-pen"/></svg></button><button data-it="cal" title="قلم الخط العربي"><svg class="ico"><use href="#i-cal"/></svg></button><button data-it="er" title="ممسحة"><svg class="ico"><use href="#i-er"/></svg></button><i class="isep"></i><button data-ic="#e0242f" title="أحمر"><span class="sw" style="background:#e0242f"></span></button><button data-ic="#2f5bd3" title="أزرق"><span class="sw" style="background:#2f5bd3"></span></button><button data-ic="#1f9d55" title="أخضر"><span class="sw" style="background:#1f9d55"></span></button><button data-ic="#15213a" title="أسود"><span class="sw" style="background:#15213a"></span></button><i class="isep"></i><button data-ink="full" class="wide" title="مكان الكتابة: الشاشة كلها (تظهر في مشاركة الشاشة) أو السؤال فقط (يظهر على أجهزة الطلاب)"><span class="fl1">🖥 الشاشة كلها</span><span class="fl0">📱 على السؤال</span></button><i class="isep"></i><button data-ink="undo" title="تراجع"><svg class="ico"><use href="#i-undo"/></svg></button><button data-ink="clear" title="مسح الكتابة"><svg class="ico"><use href="#i-trash"/></svg></button></div>
+    <div class="inkbar" id="rInk"><button data-it="pen" title="قلم"><svg class="ico"><use href="#i-pen"/></svg></button><button data-it="cal" title="قلم الخط العربي"><svg class="ico"><use href="#i-cal"/></svg></button><button data-it="er" title="ممسحة"><svg class="ico"><use href="#i-er"/></svg></button><i class="isep"></i><button data-ic="#e0242f" title="أحمر"><span class="sw" style="background:#e0242f"></span></button><button data-ic="#2f5bd3" title="أزرق"><span class="sw" style="background:#2f5bd3"></span></button><button data-ic="#1f9d55" title="أخضر"><span class="sw" style="background:#1f9d55"></span></button><button data-ic="#15213a" title="أسود"><span class="sw" style="background:#15213a"></span></button><i class="isep"></i><button data-iw="0.6" class="isz" title="رفيع"><i style="width:4px;height:4px"></i></button><button data-iw="1" class="isz" title="متوسط"><i style="width:7px;height:7px"></i></button><button data-iw="1.8" class="isz" title="عريض"><i style="width:10px;height:10px"></i></button><button data-iw="3" class="isz" title="عريض جدًا"><i style="width:14px;height:14px"></i></button><i class="isep"></i><button data-ink="full" class="wide" title="مكان الكتابة: الشاشة كلها (تظهر في مشاركة الشاشة) أو السؤال فقط (يظهر على أجهزة الطلاب)"><span class="fl1">🖥 الشاشة كلها</span><span class="fl0">📱 على السؤال</span></button><i class="isep"></i><button data-ink="undo" title="تراجع"><svg class="ico"><use href="#i-undo"/></svg></button><button data-ink="clear" title="مسح الكتابة"><svg class="ico"><use href="#i-trash"/></svg></button></div>
     <canvas id="rOver"></canvas>
     <div class="stage qstage" id="rStage"><div id="rBoard"></div>
     </div>
@@ -1616,7 +1623,7 @@ class Board {
       const box = document.createElement('div'); box.className = 'selbox'; this.host.appendChild(box);
       this.sel = { x0: x, y0: y, x1: x, y1: y, box }; this.drawSel(); return;
     }
-    if (t.t === 'laser') { e.preventDefault(); this.ov.setPointerCapture(e.pointerId); this.pid = e.pointerId; this.laz = true; this.onLaser && this.onLaser(x, y); return }
+    if (t.t === 'laser') { e.preventDefault(); this.ov.setPointerCapture(e.pointerId); this.pid = e.pointerId; this.laz = true; this.onLaser && this.onLaser(x, y, true); return }
     if (t.t === 'lasso') {
       e.preventDefault(); this.ov.setPointerCapture(e.pointerId); this.pid = e.pointerId;
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'lasso'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('preserveAspectRatio', 'none');
@@ -1712,8 +1719,8 @@ function makeToolbar(el, { tools, colors, stamps, extras = [], lead = [] }) {
   if (stamps) h += '<span class="sep"></span>' + [['ok', '✓', 'علامة صح', 'color:#1f9d55'], ['no', '✗', 'علامة خطأ', 'color:#e0242f'], ['star', '★', 'نجمة', 'color:#e8a10f'], ['great', 'ممتاز', 'ختم ممتاز', ''], ['q', '؟', 'راجع الحل', 'color:#e07b16']]
     .map(([k, g, n, c]) => `<button data-st="${k}" title="${n}" aria-label="${n}"><span class="stp${k === 'great' ? ' w' : ''}" style="${c}">${g}</span></button>`).join('');
   const pal = colors.map(c => `<button data-c="${c}" title="لون" aria-label="لون"><span class="sw" style="background:${c}"></span></button>`).join('')
-    + '<span class="sep"></span>' + [3, 6, 12].map(w => `<button data-w="${w}" class="sz" title="سُمك" aria-label="سمك ${w}"><i style="width:${4 + w * .9}px;height:${4 + w * .9}px"></i></button>`).join('');
-  h += `<span class="sep"></span><span class="palwrap"><button data-pal class="palbtn" title="اللون والسُّمك" aria-label="اللون والسُّمك"><span class="sw"><i></i></span></button><span class="palpop" hidden>${pal}</span></span>`;
+;
+  h += `<span class="sep"></span><span class="palwrap"><button data-pal class="palbtn" title="اللون والسُّمك" aria-label="اللون والسُّمك"><span class="sw"><i></i></span></button><span class="palpop" hidden>${pal}</span></span><span class="szg">${[3, 6, 12, 20].map(w => `<button data-w="${w}" class="sz" title="سُمك القلم" aria-label="سمك ${w}"><i style="width:${3 + w * .55}px;height:${3 + w * .55}px"></i></button>`).join('')}</span>`;
   if (lead.length) h = lead.map((x, i) => `<button data-ld="${i}" title="${x.label}" aria-label="${x.label}">${svgI(x.icon)}</button>`).join('') + '<span class="sep"></span>' + h;
   if (extras.length) h += '<span class="sep"></span>' + extras.map((x, i) => `<button data-x="${i}" title="${x.label}" aria-label="${x.label}"${x.color ? ` style="color:${x.color}"` : ''}>${svgI(x.icon)}</button>`).join('');
   el.innerHTML = h;
@@ -2786,9 +2793,10 @@ function laserAt(host, x, y) {
   d.style.opacity = 1; d.style.left = x / W * 100 + '%'; d.style.top = y / H * 100 + '%';
   clearTimeout(d._h); d._h = setTimeout(() => d.style.opacity = 0, 1200);
 }
-function sendLaser(x, y) {
-  laserAt($('#tBoard'), x, y); const n = performance.now();
-  if (n - LZ.t > 55 && T.code) { LZ.t = n; DB.set(`sessions/${T.code}/laser`, { x: Math.round(x), y: Math.round(y), t: DB.now() }) }
+function sendLaser(x, y, down) {
+  if (down) { lzFlush(); LZ2.sid = (LZ2.sid + 1) % 1e6 }
+  laserAdd($('#tBoard'), 't' + LZ2.sid, [x, y]); LZ2.buf.push(Math.round(x), Math.round(y));
+  if (performance.now() - LZ.t > 60) lzFlush(); else { clearTimeout(LZ2.ft); LZ2.ft = setTimeout(lzFlush, 70) }
 }
 
 /* ======================= attendance and participation ======================= */
@@ -2988,12 +2996,13 @@ function denseRank(list) { let pl = 0, prev = null; return (list || []).map(r =>
 const placeOf = (list, sid) => { const r = denseRank(list).find(x => x.sid === sid); return r ? r.pl : 0 };
 
 /* ======================= quiz pens: whole screen or the question ======================= */
-const QI = { t: 'pen', full: ls.get('rb_qfull') !== '0', map: new Map(), hist: [], qid: null, cur: null };
-function qInkTool(full) { return { t: QI.t, c: QZ.inkC, w: QI.t === 'er' ? 7 : full ? (QI.t === 'cal' ? 4 : 4) : (QI.t === 'cal' ? 5 : 6) } }
+const QI = { k: +(ls.get('rb_qk') || 1) || 1, t: 'pen', full: ls.get('rb_qfull') !== '0', map: new Map(), hist: [], qid: null, cur: null };
+function qInkTool(full) { const r = qInkTool0(full); r.w = Math.max(1, Math.round(r.w * (QI.k || 1) * 10) / 10); return r }
+function qInkTool0(full) { return { t: QI.t, c: QZ.inkC, w: QI.t === 'er' ? 7 : full ? (QI.t === 'cal' ? 4 : 4) : (QI.t === 'cal' ? 5 : 6) } }
 function setInk(on) {
   QZ.inkOn = on; QZ.board.locked = !on || QI.full; $('#rBoard').classList.toggle('inkon', on && !QI.full);
   $('#rOver').classList.toggle('on', on && QI.full); if (on && QI.full) qOverSize();
-  $('#rInk').querySelectorAll('button').forEach(b => b.classList.toggle('on', (on && b.dataset.it === QI.t) || (on && QI.t !== 'er' && b.dataset.ic === QZ.inkC) || (b.dataset.ink === 'full' && QI.full)));
+  $('#rInk').querySelectorAll('button').forEach(b => b.classList.toggle('on', (on && b.dataset.it === QI.t) || (on && QI.t !== 'er' && b.dataset.ic === QZ.inkC) || (b.dataset.ink === 'full' && QI.full) || (!!b.dataset.iw && +b.dataset.iw === QI.k)));
 }
 function qOverSize() { const c = $('#rOver'), r = c.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2), w = Math.round(r.width * d), h = Math.round(r.height * d); if (w && (c.width !== w || c.height !== h)) { c.width = w; c.height = h } qOverDraw() }
 function qOverDraw() { const c = $('#rOver'), x = c.getContext('2d'), d = c.width / Math.max(1, c.getBoundingClientRect().width); x.clearRect(0, 0, c.width, c.height); QI.map.forEach(s => drawStroke(x, s, d)) }
@@ -3004,6 +3013,7 @@ function qInkInit() {
   ['pointerup', 'pointercancel'].forEach(t => ov.addEventListener(t, () => { if (QI.cur) { QI.hist.push(QI.cur.id); QI.cur = null } }));
   $('#rInk').onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.iw) { QI.k = +b.dataset.iw; ls.set('rb_qk', QI.k); if (QI.t === 'er') QI.t = 'pen'; setInk(true); return }
     if (b.dataset.ic) { QZ.inkC = b.dataset.ic; if (QI.t === 'er') QI.t = 'pen'; setInk(true) }
     else if (b.dataset.it) { if (QZ.inkOn && QI.t === b.dataset.it) setInk(false); else { QI.t = b.dataset.it; setInk(true) } }
     else if (b.dataset.ink === 'full') { QI.full = !QI.full; ls.set('rb_qfull', QI.full ? '1' : '0'); setInk(QZ.inkOn); toast(QI.full ? '🖥 الكتابة على الشاشة كلها، تظهر في مشاركة الشاشة' : '📱 الكتابة على السؤال، وتظهر على أجهزة الطلاب') }
@@ -3429,6 +3439,31 @@ function lbInfoText() {
   return `${cls}📅 ${d}`;
 }
 
+/* ======================= laser trail (fades after two seconds) ======================= */
+const LZ2 = { hosts: new Map(), sid: 0, buf: [], ft: 0, LIFE: 2000 };
+function lzHost(host) { let o = LZ2.hosts.get(host); if (!o || !o.cv.isConnected) { const cv = document.createElement('canvas'); cv.className = 'lzc'; host.appendChild(cv); o = { cv, segs: [], raf: 0 }; LZ2.hosts.set(host, o) } return o }
+function laserAdd(host, s, pts) {
+  if (!host || !pts || pts.length < 2) return; const o = lzHost(host), now = performance.now();
+  let g = o.segs.find(z => z.s === s); if (!g) { g = { s, p: [] }; o.segs.push(g) }
+  for (let i = 0; i + 1 < pts.length; i += 2) g.p.push([pts[i], pts[i + 1], now]);
+  laserAt(host, pts[pts.length - 2], pts[pts.length - 1]);
+  if (!o.raf) o.raf = requestAnimationFrame(() => lzDraw(host, o));
+}
+function lzDraw(host, o) {
+  o.raf = 0; const cv = o.cv, r = host.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2), w = Math.round(r.width * d), h = Math.round(r.height * d);
+  if (!w || !h) return; if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h }
+  const x = cv.getContext('2d'), now = performance.now(), L = LZ2.LIFE, kx = w / W, ky = h / H;
+  x.clearRect(0, 0, w, h); x.lineCap = x.lineJoin = 'round';
+  o.segs.forEach(g => { while (g.p.length && now - g.p[0][2] >= L) g.p.shift() }); o.segs = o.segs.filter(g => g.p.length);
+  for (const pass of [0, 1]) for (const g of o.segs) for (let i = 1; i < g.p.length; i++) {
+    const a = g.p[i - 1], b = g.p[i]; x.globalAlpha = Math.max(0, Math.min(1, (L - (now - b[2])) / 450));
+    x.strokeStyle = pass ? '#ff2d3d' : 'rgba(255,45,61,.28)'; x.lineWidth = (pass ? 2.6 : 8) * d;
+    x.beginPath(); x.moveTo(a[0] * kx, a[1] * ky); x.lineTo(b[0] * kx, b[1] * ky); x.stroke();
+  }
+  x.globalAlpha = 1; if (o.segs.length) o.raf = requestAnimationFrame(() => lzDraw(host, o));
+}
+function lzFlush() { clearTimeout(LZ2.ft); if (LZ2.buf.length && T.code) { DB.set(`sessions/${T.code}/laser`, { s: LZ2.sid, p: LZ2.buf, t: DB.now() }); LZ2.buf = []; LZ.t = performance.now() } }
+
 /* ======================= STUDENT ======================= */
 const S = { code: null, sid: null, meta: {}, tMap: new Map(), mine: new Map(), marks: new Map(), bg: { type: 'grid', img: null }, unsubs: [], board: null, tool: null, seen: false, ready: false };
 function initStudentUI() {
@@ -3466,7 +3501,7 @@ async function studentJoin(code, name) {
   DB.get(`sessions/${code}/tinfo`).then(ti => { ti = ti || {}; const nm = ti.name || ADMIN_NAME; $('#stTeacher').textContent = nm; $('#student .brand .ava').src = photoOf(nm, ti.photo); $('#student .brand .ava').alt = nm }).catch(() => {});
   const b = `sessions/${code}`;
   S.unsubs.push(DB.connected(ok => { setConn($('#sConn'), ok); if (ok && !S.kicked) { DB.update(rp, { online: true, name: S.name }); DB.onDisconnect(rp, { online: false }) } }));
-  S.unsubs.push(DB.onValue(b + '/laser', v => { if (v && v.t && DB.now() - v.t < 4000) laserAt($('#sBoard'), v.x, v.y) }));
+  S.unsubs.push(DB.onValue(b + '/laser', v => { if (v && v.t && DB.now() - v.t < 4000) { if (v.p) laserAdd($('#sBoard'), 's' + v.s, v.p); else laserAt($('#sBoard'), v.x, v.y) } }));
   S.unsubs.push(DB.onValue(b + '/meta', mt => {
     if (!mt || !mt.active) return leave('انتهت الجلسة', 'أنهى المعلم هذه الجلسة. شكرًا لمشاركتك.');
     if (S.meta && S.meta.active && !!S.meta.locked !== !!mt.locked) toast(mt.locked ? '🔒 السبورة مقفلة الآن' : '✏️ تقدر تكتب على سبورتك الآن');
