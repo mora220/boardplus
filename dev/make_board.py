@@ -421,6 +421,8 @@ import feat_tugan
 s = feat_tugan.apply(s, _r1)
 import feat_split
 s = feat_split.apply(s, _r1)
+import feat_timer
+s = feat_timer.apply(s, _r1, 'bp')
 import feat_ansinfo
 s = feat_ansinfo.apply(s, _r1, 'bp')
 import feat_penlaser
