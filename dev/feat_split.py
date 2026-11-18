@@ -30,7 +30,9 @@ CSS = r"""
 @media (max-width:560px){.rqb{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}.rqopts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.rqo{grid-template-columns:1fr;text-align:center;padding:4px}.rqo .bar{display:none}.rqo em{font-size:11px}}
 @media (max-height:600px){.rqo{padding:4px 8px;gap:4px}.rqo b{font-size:20px}.rqopts{gap:6px}.rqh{padding:6px 10px;gap:6px}.rqh b{font-size:16px}.rqh .rbtn{height:34px;padding:0 10px;font-size:14px}.rqs{padding:3px 8px;font-size:13px}.rqb{padding-top:50px}}
 .rqbar{flex-wrap:nowrap!important;overflow-x:auto;max-width:calc(100% - 20px)}
-/* the student */
+/* the student: fit the real visible height on phones (the browser bars), keep all the options in view */
+.race{height:100vh;height:100dvh;bottom:auto;padding-bottom:env(safe-area-inset-bottom,0px)}
+
 @media (max-height:620px){.rg-q{flex-basis:30%}.rg-world .gm-arena{min-height:170px}.race .ropt{min-height:54px;font-size:26px}.race .ropts{gap:8px;padding:0 10px 10px}}
 @media (max-height:620px) and (min-width:420px){.race .ropts{grid-template-columns:repeat(4,1fr)}}
 """

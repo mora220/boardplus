@@ -93,6 +93,7 @@ CSS = r"""
 .tg-pan.r{background:linear-gradient(135deg,#e63946,#9d1c26)}
 .tg-pan.b{background:linear-gradient(135deg,#2f6fe0,#173f8f);justify-self:end}
 .tg-pan h3{margin:0;font-size:22px;display:flex;gap:8px;align-items:center}
+.tg-pan .okc{background:#fff;color:#137a3f;border-radius:99px;padding:2px 12px;font:900 20px var(--f-display);box-shadow:0 2px 0 rgba(0,0,0,.15)}
 .tg-pan h3 small{margin-inline-start:auto;font-size:15px;opacity:.9}
 .tg-pow{height:12px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden}
 .tg-pow i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#ffd166,#fff);transition:width .8s}
@@ -252,8 +253,8 @@ function drawTugT(el) {
     const tm = $(t === 'r' ? '#tgR' : '#tgB'), sz = st.S[t].sz; if (tm.dataset.sz !== String(Math.min(Math.max(sz, 1), 5)) + '/' + sz) { tm.dataset.sz = String(Math.min(Math.max(sz, 1), 5)) + '/' + sz; tm.innerHTML = people(t, sz) }
     tm.classList.toggle('fall', end && sq.win && sq.win !== 'd' && sq.win !== t); tm.classList.toggle('jump', end && sq.win === t);
     const p = $(t === 'r' ? '#tgPr' : '#tgPb'), pw = t === 'r' ? st.pr : st.pb, X = st.S[t];
-    p.innerHTML = `<h3>${TEAMS[t].e} ${TEAMS[t].n}<small>👥 ${X.sz}</small></h3><div class="tg-pow"><i style="width:${Math.min(100, pw / Math.max(st.W, 1) * 100)}%"></i></div>
-      <div class="st"><span>💪 قوة الشد ${pw.toFixed(1)}</span><span>✓ ${X.ok} إجابة صحيحة</span><span>🏁 ${X.fin}/${X.sz}</span></div>`;
+    p.innerHTML = `<h3>${TEAMS[t].e} ${TEAMS[t].n}<span class="okc" title="عدد الإجابات الصحيحة للفريق">✓ ${X.ok}</span><small>👥 ${X.sz}</small></h3><div class="tg-pow"><i style="width:${Math.min(100, pw / Math.max(st.W, 1) * 100)}%"></i></div>
+      <div class="st"><span>💪 قوة الشد ${pw.toFixed(1)}</span><span>🏁 ${X.fin}/${X.sz}</span></div>`;
   });
   $('#tgMid').innerHTML = `<div class="t">🪢 شد الحبل</div><div class="p">${esc(sq.title || '')} · ${sq.n} أسئلة</div>`;
   $('#tgAct').innerHTML = end ? '' : '<button class="rbtn red" id="rcEnd">⏹ إنهاء</button><button class="rbtn" id="rcHide">إغلاق مؤقت</button>';
