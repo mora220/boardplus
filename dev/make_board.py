@@ -417,6 +417,8 @@ import feat_rgames
 s = feat_rgames.apply(s, _r1)
 import feat_tug
 s = feat_tug.apply(s, _r1)
+import feat_tugan
+s = feat_tugan.apply(s, _r1)
 import feat_ansinfo
 s = feat_ansinfo.apply(s, _r1, 'bp')
 import feat_penlaser
