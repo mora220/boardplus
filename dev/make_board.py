@@ -425,6 +425,8 @@ import feat_timer
 s = feat_timer.apply(s, _r1, 'bp')
 import feat_phonefit
 s = feat_phonefit.apply(s, _r1, 'bp')
+import feat_qwait
+s = feat_qwait.apply(s, _r1, 'bp')
 import feat_ansinfo
 s = feat_ansinfo.apply(s, _r1, 'bp')
 import feat_penlaser

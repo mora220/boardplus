@@ -4380,7 +4380,7 @@ async function showQuestion(i) {
   QZ.unsubInk = syncMap(`sessions/${T.code}/qink/${qid}`, QZ.ink, () => QZ.board.mark('m'));
   QZ.unsubAns = DB.onValue(`sessions/${T.code}/qa/${qid}`, v => {
     if (!QZ.run || QZ.run.qid !== qid) return; QZ.answers = v || {}; renderRun();
-    const N = onlineCount(); if (r.phase === 'q' && !r.paused && N && Object.keys(QZ.answers).length >= N) setTimeout(() => QZ.run && QZ.run.qid === qid && reveal(), 700);
+    const N = [...T.st.values()].filter(x => x && x.info && x.info.name).length; if (r.phase === 'q' && !r.paused && N && Object.keys(QZ.answers).length >= N) setTimeout(() => QZ.run && QZ.run.qid === qid && reveal(), 700);
   });
 }
 function runTick() {
