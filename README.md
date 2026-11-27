@@ -12,6 +12,7 @@
 | `public/index.html` | السبورة (المعلم، الطالب، لوحة الإدارة) |
 | `public/games.html` | BoardPlus Games (الألعاب داخل السبورة) |
 | `public/rt.js` | مكتبة الاتصال اللحظي بالخادم |
+| `public/kid/` | شاشة الطالب: GSAP وLottie (مستضافة محليًا) وحركات الشخصيات (`owl` و`panda` و`monster` و`trophy`…) |
 | `src/worker.js` | الخادم: Cloudflare Worker + Durable Objects (الغرف والصلاحيات والتخزين) |
 | `wrangler.toml` | إعدادات النشر على Cloudflare |
 | `dev/` | أدوات التطوير والاختبار المحلي فقط (لا تُنشر) |
