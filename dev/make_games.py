@@ -11,7 +11,7 @@ def rep_block(start, end, new):
     global s
     a = s.index(start); b = s.index(end, a); s = s[:a] + new + s[b:]
 
-LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect x="2" y="2" width="44" height="44" rx="12" fill="#2f5bd3"/><rect x="10" y="12" width="28" height="19" rx="3" fill="#fff"/><path d="M15 25l5 4 10-11" fill="none" stroke="#e0242f" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 34.5v8M20 38.5h8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect x="2" y="2" width="44" height="44" rx="12" fill="#7c5cff"/><rect x="10" y="12" width="28" height="19" rx="3" fill="#fff"/><path d="M15 25l5 4 10-11" fill="none" stroke="#e0242f" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 34.5v8M20 38.5h8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 import base64
 LOGO_URI = 'data:image/svg+xml;base64,' + base64.b64encode(LOGO_SVG.encode()).decode()
 
@@ -84,5 +84,7 @@ rep('const I18N = {', 'const I18N = {' + json.dumps(ADD, ensure_ascii=False)[1:-
 s = re.sub(r"const DB_URL_FALLBACKS = \[.*?\];\n", 'const DB_URL_FALLBACKS = [];\n', s, count=1, flags=re.S)
 for bad in ['Ra26388', "ADMIN_PASS", 'ragabboard-9fe26']:
     assert bad not in s, bad
+import feat_games_theme
+s = feat_games_theme.apply(s, rep)
 (D.parent / 'public' / 'games.html').write_text(s)
 print('games.html', len(s))
