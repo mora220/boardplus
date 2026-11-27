@@ -437,6 +437,8 @@ import feat_kids
 s = feat_kids.apply(s, _r1)
 import feat_theme
 s = feat_theme.apply(s, _r1)
+import feat_teach
+s = feat_teach.apply(s, _r1)
 
 # sanity: no leftovers
 for bad in ['__AVATAR__', 'ADMIN_HASH', 'ADMIN_EMAIL', 'emailOf(', 'createUser', 'AVATAR_SRC', 'quizragab.html', "'teacher/q"]:

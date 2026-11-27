@@ -242,7 +242,8 @@ export class Room extends DurableObject {
     if (getIn(this.tree, ['meta', 'active']) !== true) return false;
     if (s[0] === 'roster' && s.length >= 2) {
       if (s.length === 2) return !!(v && typeof v === 'object' && typeof v.name === 'string' && v.name.trim() && v.name.length <= 30);
-      if (!['name', 'online', 'hand', 'joined', 'renamed'].includes(s[2]) || s.length > 3) return false;
+      if (!['name', 'online', 'hand', 'joined', 'renamed', 'feel'].includes(s[2]) || s.length > 3) return false;
+      if (s[2] === 'feel') return v == null || (typeof v === 'object' && ['g', 'y', 'r'].includes(v.v) && typeof v.id === 'string' && v.id.length <= 24 && Object.keys(v).length === 2);   // check for understanding
       return s[2] !== 'name' || (typeof v === 'string' && v.trim().length > 0 && v.length <= 30);
     }
     if (s[0] === 'sb' && s.length >= 2) return getIn(this.tree, ['roster', s[1]]) != null && JSON.stringify(v || '').length < 400000;

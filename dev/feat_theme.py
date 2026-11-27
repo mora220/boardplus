@@ -350,7 +350,7 @@ FEATS = [
     ('trophy', '#ffc531', '#e39d00', 'نقاط ولوحة صدارة', 'نقاط على كل ختم وإجابة، والخمسة الأوائل فقط على الشاشة حفاظًا على الخصوصية.'),
     ('clist', '#1fc58f', '#11946a', 'فصولي والحضور', 'قائمة أسماء لكل فصل، والطالب يختار اسمه، والحضور يتسجل لوحده.'),
     ('show', '#c86bfa', '#a148d8', 'اعرض أي شيء', 'صورة، صوت، فيديو، يوتيوب، أو باوربوينت وPDF يوصل لكل الطلاب.'),
-    ('timer', '#2cc8cc', '#11999e', 'تحكم كامل', 'مؤقت للحل، قفل السبورات، ليزر، وصفحات للسبورة ترجع لها متى ما تحتاج.'),
+    ('timer', '#2cc8cc', '#11999e', 'صف عادل وتحكم كامل', '«من يجيب؟» بدون تكرار، مجموعات عشوائية، و«كيف فهمتم؟» توصلك أنت فقط، مع مؤقت وقفل وليزر.'),
 ]
 
 
@@ -494,7 +494,7 @@ I18N_ADD = {
     "نقاط ولوحة صدارة": "Points and leaderboard", "نقاط على كل ختم وإجابة، والخمسة الأوائل فقط على الشاشة حفاظًا على الخصوصية.": "Points for every stamp and answer; only the top five on screen for privacy.",
     "فصولي والحضور": "My classes and attendance", "قائمة أسماء لكل فصل، والطالب يختار اسمه، والحضور يتسجل لوحده.": "A name list per class; students pick their name and attendance records itself.",
     "اعرض أي شيء": "Show anything", "صورة، صوت، فيديو، يوتيوب، أو باوربوينت وPDF يوصل لكل الطلاب.": "Images, audio, video, YouTube, PowerPoint or PDF to every student.",
-    "تحكم كامل": "Full control", "مؤقت للحل، قفل السبورات، ليزر، وصفحات للسبورة ترجع لها متى ما تحتاج.": "A timer, board lock, laser and pages you can go back to anytime.",
+    "صف عادل وتحكم كامل": "A fair class, full control", "«من يجيب؟» بدون تكرار، مجموعات عشوائية، و«كيف فهمتم؟» توصلك أنت فقط، مع مؤقت وقفل وليزر.": "A fair “Who answers?” with no repeats, random groups, a “Did you understand?” check only you see, plus a timer, lock and laser.",
     "للطلاب": "For students", "شاشة يحبها الطالب من أول دخول": "A screen students love from the first visit",
     "يدخل بالكود أو QR": "Joins with a code or QR", "بدون حساب، ويختار صاحبه من شخصيات كيوت.": "with no account, and picks a cute buddy.",
     "يحتفل معك": "Celebrates with you", "كل ما ختمت على إجابته، ويجمع نقاط يشوفها تكبر.": "every time you stamp an answer, and watches their points grow.",
